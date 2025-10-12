@@ -1,8 +1,7 @@
 'use server';
 
 import { databases, storage, AppwriteIds, getAnonymousSession } from './appwrite';
-import { ID, Query } from 'appwrite';
-import { InputFile } from 'node-appwrite';
+import { ID, Query, InputFile } from 'node-appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 
