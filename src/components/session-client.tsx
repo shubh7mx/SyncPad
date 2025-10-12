@@ -76,7 +76,7 @@ export default function SessionClient({
   initialData: SessionData;
 }) {
   const [text, setText] = useState(initialData.textContent);
-  const [files, setFiles] = useState<FileObject[]>(initialData.files.filter(f => !isFileExpired(f.$createdAt)));
+  const [files, setFiles] = useState<FileObject[]>(initialData.files);
   const [uploading, setUploading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isFilesVisible, setIsFilesVisible] = useState(true);
@@ -88,11 +88,33 @@ export default function SessionClient({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const cleanupExpiredFiles = (filesToCheck: FileObject[]) => {
+    const activeFiles: FileObject[] = [];
+    let wasFileDeleted = false;
+    
+    filesToCheck.forEach(file => {
+      if (isFileExpired(file.$createdAt)) {
+        // No need to await, let it run in the background
+        deleteFile(sessionId, file.$id);
+        wasFileDeleted = true;
+      } else {
+        activeFiles.push(file);
+      }
+    });
+
+    if (wasFileDeleted) {
+        setFiles(activeFiles);
+    }
+    
+    return activeFiles;
+  };
+  
   useEffect(() => {
     setIsMounted(true);
     if (window.innerWidth < 768) {
       setIsFilesVisible(false);
     }
+    cleanupExpiredFiles(initialData.files);
   }, []);
 
   useEffect(() => {
@@ -139,7 +161,8 @@ export default function SessionClient({
 
         if (newFileIds !== currentFileIds) {
           getSession(sessionId).then(newData => {
-            setFiles(newData.files.filter(f => !isFileExpired(f.$createdAt)));
+            const activeFiles = cleanupExpiredFiles(newData.files);
+            setFiles(activeFiles);
           });
         }
       });
@@ -148,11 +171,17 @@ export default function SessionClient({
     if (isMounted) {
       unsubscribe = setupSubscription();
     }
+    
+    // Periodically check for expired files
+    const cleanupInterval = setInterval(() => {
+        cleanupExpiredFiles(files);
+    }, 5 * 60 * 1000); // Check every 5 minutes
 
     return () => {
       if (unsubscribe) {
         unsubscribe();
       }
+      clearInterval(cleanupInterval);
     };
   }, [sessionId, files, isMounted, text]);
 
@@ -212,6 +241,7 @@ export default function SessionClient({
   const handleDelete = async (fileId: string) => {
     try {
       await deleteFile(sessionId, fileId);
+      setFiles((currentFiles) => currentFiles.filter(f => f.$id !== fileId));
       toast({
         title: 'File Deleted',
         description: 'The file has been removed successfully.',
