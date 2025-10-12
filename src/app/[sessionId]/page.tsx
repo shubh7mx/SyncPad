@@ -2,17 +2,17 @@
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
 import { useEffect, useState } from 'react';
-import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload, Files } from "lucide-react";
+import { NotepadText } from "lucide-react";
 import Link from "next/link";
-import { use } from 'react';
-
+import { usePathname } from 'next/navigation';
 
 type Props = {
   params: { sessionId: string };
 };
 
 export default function SessionPage({ params }: Props) {
-  const { sessionId } = use(params);
+  const { sessionId } = params;
+  const pathname = usePathname();
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,20 +45,22 @@ export default function SessionPage({ params }: Props) {
   }
 
   return (
-    <div className="flex h-screen flex-col font-sans antialiased">
-      <header className="flex h-12 flex-shrink-0 items-center justify-between border-b px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <NotepadText className="h-6 w-6 text-primary" />
-          <h1>SyncPad</h1>
-        </Link>
-        <div className="flex-1 text-center text-sm font-medium text-muted-foreground">
-          {sessionId}
-        </div>
-        <div className="w-[120px]"></div>
-      </header>
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <SessionClient sessionId={sessionId} initialData={initialData} />
-      </main>
+    <div className="flex h-screen w-full items-center justify-center bg-muted/40 p-4">
+      <div className="flex h-full w-full max-w-7xl flex-col rounded-lg border bg-background font-sans antialiased shadow-lg overflow-hidden">
+        <header className="flex h-12 flex-shrink-0 items-center justify-between border-b px-4">
+          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+            <NotepadText className="h-6 w-6 text-primary" />
+            <h1>SyncPad</h1>
+          </Link>
+          <div className="flex-1 text-center text-sm font-medium text-muted-foreground">
+            {pathname.substring(1)}
+          </div>
+          <div className="w-[120px]"></div>
+        </header>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <SessionClient sessionId={sessionId} initialData={initialData} />
+        </main>
+      </div>
     </div>
   );
 }
