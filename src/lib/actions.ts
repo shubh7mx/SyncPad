@@ -130,3 +130,35 @@ export async function deleteFile(sessionId: string, fileId: string) {
     throw new Error('Could not delete file.');
   }
 }
+
+export async function deleteAllFiles(sessionId: string) {
+  await getAnonymousSession();
+  try {
+    const document = await databases.getDocument(
+      AppwriteIds.databaseId,
+      AppwriteIds.sessionsCollectionId,
+      sessionId
+    );
+    const fileIds = (document.files || []) as string[];
+
+    // Concurrently delete all files from storage
+    await Promise.all(
+      fileIds.map((fileId) =>
+        storage.deleteFile(AppwriteIds.filesBucketId, fileId)
+      )
+    );
+
+    // Update the document with an empty file list
+    await databases.updateDocument(
+      AppwriteIds.databaseId,
+      AppwriteIds.sessionsCollectionId,
+      sessionId,
+      { files: [] }
+    );
+
+    revalidatePath(`/s/${sessionId}`);
+  } catch (error) {
+    console.error('Failed to delete all files:', error);
+    throw new Error('Could not delete all files.');
+  }
+}

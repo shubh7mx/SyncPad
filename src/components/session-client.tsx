@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { updateText, uploadFile, getSession, deleteFile } from '@/lib/actions';
+import { updateText, uploadFile, getSession, deleteFile, deleteAllFiles } from '@/lib/actions';
 import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
 import { File as FileIcon, Upload, Download, Loader2, X, Trash2, PlusCircle, PanelRightOpen, PanelRightClose, ChevronDown } from 'lucide-react';
@@ -255,6 +255,24 @@ export default function SessionClient({
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (files.length === 0) return;
+    try {
+      await deleteAllFiles(sessionId);
+      setFiles([]);
+      toast({
+        title: 'All Files Deleted',
+        description: 'All files have been removed from this session.',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Delete Failed',
+        description: 'Could not delete all files.',
+      });
+    }
+  };
+
 
   return (
     <div className="flex-1 grid md:grid-cols-[1fr_auto] overflow-hidden">
@@ -383,8 +401,36 @@ export default function SessionClient({
                         </div>
                         )}
                     </ScrollArea>
-                    <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
+                    <footer className="h-12 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
                         <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
+                        {files.length > 0 && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-auto px-2 py-1 text-xs border-destructive text-destructive hover:bg-destructive/10"
+                                disabled={files.length === 0}
+                              >
+                                Delete All
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete all files?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete all {files.length} files from this session. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteAll} className={cn(buttonVariants({ variant: 'destructive' }))}>
+                                  Delete All
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                     </footer>
                 </div>
             </aside>
@@ -481,7 +527,7 @@ export default function SessionClient({
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(file.$id)}>
+                                        <AlertDialogAction onClick={() => handleDelete(file.$id)} className={buttonVariants({ variant: 'destructive' })}>
                                             Delete
                                         </AlertDialogAction>
                                         </AlertDialogFooter>
@@ -501,8 +547,35 @@ export default function SessionClient({
                 </div>
                 )}
             </ScrollArea>
-            <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
+            <footer className="h-12 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
                 <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
+                 {files.length > 0 && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-auto px-2 py-1 text-xs border-destructive text-destructive hover:bg-destructive/10"
+                        >
+                            Delete All
+                        </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete all files?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                            This will permanently delete all {files.length} files from this session. This action cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteAll} className={cn(buttonVariants({ variant: 'destructive' }))}>
+                                Delete All
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </footer>
         </aside>
 
