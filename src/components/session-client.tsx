@@ -336,10 +336,10 @@ export default function SessionClient({
                                 key={file.$id}
                                 className="flex flex-col rounded-md border bg-background/50 group"
                             >
-                                <div className="flex items-center justify-between p-2 gap-2">
+                                <div className="flex items-center p-2 gap-2">
                                     <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                                     <div className="flex-1 min-w-0">
-                                        <p className="truncate text-sm font-medium">
+                                        <p className="text-sm font-medium line-clamp-2 break-all">
                                         {file.name}
                                         </p>
                                         <p className="text-xs text-muted-foreground truncate">
@@ -480,10 +480,10 @@ export default function SessionClient({
                         key={file.$id}
                         className="flex flex-col rounded-md border bg-background/50 group"
                     >
-                        <div className="flex items-center justify-between p-2 gap-2">
+                        <div className="flex items-center p-2 gap-2">
                             <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                             <div className="flex-1 min-w-0">
-                                <p className="truncate text-sm font-medium">
+                                <p className="text-sm font-medium line-clamp-2 break-all">
                                 {file.name}
                                 </p>
                                 <p className="text-xs text-muted-foreground truncate">
