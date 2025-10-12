@@ -220,20 +220,15 @@ export default function SessionClient({
                 Count: {charCount}
             </div>
         </div>
-        <div className={cn(
-            "absolute inset-y-0 right-0 flex transition-transform duration-300 ease-in-out",
-            isFilesVisible ? "translate-x-0" : "translate-x-full md:translate-x-[calc(100%-1rem)]"
-        )}>
-            <div className="h-full flex items-center">
-                 <button 
-                    onClick={() => setIsFilesVisible(!isFilesVisible)} 
-                    className="z-20 h-10 w-4 bg-muted hover:bg-accent border-y border-l rounded-l-md flex items-center justify-center"
-                    aria-label={isFilesVisible ? "Collapse file panel" : "Expand file panel"}
-                 >
-                    {isFilesVisible ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                </button>
-            </div>
-            <aside className="w-80 border-l bg-card flex flex-col h-full">
+        <div className={cn("flex", isFilesVisible ? "md:w-80" : "md:w-auto")}>
+             <button 
+                onClick={() => setIsFilesVisible(!isFilesVisible)} 
+                className="z-10 h-full w-4 bg-muted hover:bg-accent border-l flex items-center justify-center group"
+                aria-label={isFilesVisible ? "Collapse file panel" : "Expand file panel"}
+             >
+                {isFilesVisible ? <ChevronRight className="h-4 w-4 transform transition-transform group-hover:scale-125" /> : <ChevronLeft className="h-4 w-4 transform transition-transform group-hover:scale-125" />}
+            </button>
+            <aside className={cn("flex-1 border-l bg-card flex-col h-full", isFilesVisible ? 'flex' : 'hidden')}>
                 <div className="flex items-center justify-between p-2 border-b h-12">
                     <Button
                         onClick={() => fileInputRef.current?.click()}
