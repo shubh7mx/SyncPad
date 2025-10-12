@@ -12,10 +12,57 @@ import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
 import { File as FileIcon, Upload, Download, Loader2, X, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { formatFileSize } from '@/lib/utils';
+import { formatFileSize, cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { Progress } from './ui/progress';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const FILE_EXPIRATION_HOURS = 1;
+
+const FileExpirationTimer = ({ createdAt }: { createdAt: string }) => {
+    const [timeLeft, setTimeLeft] = useState(100);
+    const expirationTime = new Date(createdAt).getTime() + FILE_EXPIRATION_HOURS * 60 * 60 * 1000;
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date().getTime();
+            const totalDuration = FILE_EXPIRATION_HOURS * 60 * 60 * 1000;
+            const remaining = expirationTime - now;
+            
+            if (remaining <= 0) {
+                return 0;
+            }
+
+            return (remaining / totalDuration) * 100;
+        };
+
+        setTimeLeft(calculateTimeLeft());
+
+        const interval = setInterval(() => {
+            const newTimeLeft = calculateTimeLeft();
+            setTimeLeft(newTimeLeft);
+
+            if (newTimeLeft <= 0) {
+                clearInterval(interval);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [createdAt, expirationTime]);
+
+    const isExpiringSoon = (expirationTime - new Date().getTime()) < 5 * 60 * 1000;
+
+    return (
+        <Progress 
+            value={timeLeft} 
+            className={cn(
+                "h-1 transition-colors duration-500",
+                isExpiringSoon ? "text-destructive" : "text-primary"
+            )}
+        />
+    );
+};
+
 
 export default function SessionClient({
   sessionId,
@@ -206,57 +253,62 @@ export default function SessionClient({
                         {files.map((file) => (
                         <div
                             key={file.$id}
-                            className="flex items-center justify-between rounded-md border p-2 bg-background/50 group"
+                            className="flex flex-col rounded-md border bg-background/50 group"
                         >
-                            <div className="flex items-center gap-3 overflow-hidden">
-                            <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                            <div className="truncate">
-                                <p className="truncate text-sm font-medium">
-                                {file.name}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                {formatFileSize(file.sizeOriginal)} &middot;{' '}
-                                {formatDistanceToNow(new Date(file.$createdAt), {
-                                    addSuffix: true,
-                                })}
-                                </p>
+                            <div className="flex items-center justify-between p-2">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                                    <div className="truncate">
+                                        <p className="truncate text-sm font-medium">
+                                        {file.name}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                        {formatFileSize(file.sizeOriginal)} &middot;{' '}
+                                        {formatDistanceToNow(new Date(file.$createdAt), {
+                                            addSuffix: true,
+                                        })}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-shrink-0">
+                                    <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDownload(file.$id)}
+                                    aria-label={`Download ${file.name}`}
+                                    >
+                                    <Download className="h-5 w-5" />
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-muted-foreground hover:text-destructive"
+                                                aria-label={`Delete ${file.name}`}
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the file "{file.name}" from this session.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(file.$id)}>
+                                                Delete
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </div>
-                            </div>
-                            <div className="flex flex-shrink-0">
-                                <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDownload(file.$id)}
-                                aria-label={`Download ${file.name}`}
-                                >
-                                <Download className="h-5 w-5" />
-                                </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-muted-foreground hover:text-destructive"
-                                            aria-label={`Delete ${file.name}`}
-                                        >
-                                            <Trash2 className="h-5 w-5" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the file "{file.name}" from this session.
-                                        </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(file.$id)}>
-                                            Delete
-                                        </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                            <div className="px-2 pb-2">
+                                <FileExpirationTimer createdAt={file.$createdAt} />
                             </div>
                         </div>
                         ))}
