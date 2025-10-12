@@ -1,3 +1,4 @@
+
 import { Client, Databases, Storage, Account, AppwriteException } from 'appwrite';
 
 const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
@@ -9,11 +10,21 @@ export const AppwriteIds = {
     filesBucketId: '68eb5618003889cb79c5',
 };
 
-const appwriteClient = new Client().setEndpoint(endpoint).setProject(projectId);
+// Use a singleton pattern to ensure only one client is created.
+let appwriteClient: Client;
 
-export const databases = new Databases(appwriteClient);
-export const storage = new Storage(appwriteClient);
-export const account = new Account(appwriteClient);
+const getAppwriteClient = () => {
+    if (!appwriteClient) {
+        appwriteClient = new Client().setEndpoint(endpoint).setProject(projectId);
+    }
+    return appwriteClient;
+}
+
+const client = getAppwriteClient();
+
+export const databases = new Databases(client);
+export const storage = new Storage(client);
+export const account = new Account(client);
 
 let sessionPromise: Promise<any> | null = null;
 
@@ -30,7 +41,7 @@ export const getAnonymousSession = () => {
 };
 
 export function subscribe(channel: string, callback: (payload: any) => void) {
-  return appwriteClient.subscribe(channel, callback);
+  return client.subscribe(channel, callback);
 }
 
 export function getFileView(fileId: string): string {
@@ -38,4 +49,4 @@ export function getFileView(fileId: string): string {
 }
 
 
-export { appwriteClient };
+export { client as appwriteClient };
