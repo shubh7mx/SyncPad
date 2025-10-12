@@ -1,17 +1,17 @@
 'use client';
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { NotepadText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 
 type Props = {
-  params: { sessionId: string };
+  params: Promise<{ sessionId: string }>;
 };
 
 export default function SessionPage({ params }: Props) {
-  const { sessionId } = params;
+  const { sessionId } = use(params);
   const pathname = usePathname();
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
