@@ -232,9 +232,8 @@ export default function SessionClient({
             className="w-full h-full p-4 pb-10 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
           />
           <div className={cn(
-              "absolute bottom-2 text-xs text-muted-foreground transition-all duration-300 ease-in-out",
-              "md:right-auto",
-              isFilesVisible ? "right-[21rem]" : "right-4"
+              "absolute bottom-2 right-4 text-xs text-muted-foreground transition-all duration-300 ease-in-out",
+              isFilesVisible && "md:right-[21rem]"
           )}>
               Count: {charCount}
           </div>
