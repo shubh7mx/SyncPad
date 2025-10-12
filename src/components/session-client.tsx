@@ -1,35 +1,19 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
-import {
-  updateText,
-  uploadFile,
-  getFileView,
-  getSession,
-} from '@/lib/actions';
-import { appwriteClient, subscribe, AppwriteIds } from '@/lib/appwrite';
+import { updateText, uploadFile, getSession } from '@/lib/actions';
+import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
-import {
-  File as FileIcon,
-  UploadCloud,
-  Download,
-} from 'lucide-react';
+import { File as FileIcon, Upload, Download, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { cn, formatFileSize } from '@/lib/utils';
+import { formatFileSize } from '@/lib/utils';
+import { Separator } from './ui/separator';
 
 export default function SessionClient({
   sessionId,
@@ -51,32 +35,31 @@ export default function SessionClient({
       updateText(sessionId, debouncedText);
     }
   }, [debouncedText, sessionId, initialData.textContent]);
-
+  
   useEffect(() => {
     const channel = `databases.${AppwriteIds.databaseId}.collections.${AppwriteIds.sessionsCollectionId}.documents.${sessionId}`;
-    
-    const unsubscribe = subscribe(channel, (response) => {
-        const payload = response.payload as SessionData & { files: string[] };
-        
-        // Update text content
-        if (payload.textContent !== undefined && payload.textContent !== text) {
-            setText(payload.textContent);
-        }
 
-        // Check if file list has changed
-        if (payload.files && payload.files.length !== files.length) {
-            // Refetch the entire session data to get full file details
-            getSession(sessionId).then(newData => {
-                setFiles(newData.files);
-            });
-        }
+    const unsubscribe = subscribe(channel, (response) => {
+      const payload = response.payload as SessionData & { files: string[] };
+      
+      if (payload.textContent !== undefined && payload.textContent !== text) {
+        setText(payload.textContent);
+      }
+
+      const currentFileIds = files.map(f => f.$id).sort().join(',');
+      const newFileIds = (payload.files || []).sort().join(',');
+
+      if (newFileIds !== currentFileIds) {
+        getSession(sessionId).then(newData => {
+          setFiles(newData.files);
+        });
+      }
     });
 
     return () => {
-        unsubscribe();
+      unsubscribe();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, text, files]);
 
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,26 +67,19 @@ export default function SessionClient({
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const newFile = await uploadFile(
-        sessionId,
-        formData
-      );
-      if (newFile) {
-        toast({
-          title: 'File Uploaded',
-          description: `${file.name} is now available.`,
-        });
-      }
+      const formData = new FormData();
+      formData.append('file', file);
+      await uploadFile(sessionId, formData);
+      toast({
+        title: 'File Uploaded',
+        description: `${file.name} is now available.`,
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Upload Failed',
-        description:
-          error instanceof Error ? error.message : 'Could not upload file.',
+        description: error instanceof Error ? error.message : 'Could not upload file.',
       });
     } finally {
       setUploading(false);
@@ -113,110 +89,88 @@ export default function SessionClient({
     }
   };
   
-  const handleDownload = async (fileId: string) => {
-    const url = await getFileView(fileId);
+  const handleDownload = (fileId: string) => {
+    const url = getFileView(fileId);
     window.open(url, '_blank');
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-2">
-        {/* Text Area */}
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="font-headline">Synced Pad</CardTitle>
-            <CardDescription>
-              Text entered here syncs in real-time with anyone using this session link.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1">
-            <Textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Start typing here..."
-              className="h-full min-h-[300px] resize-none font-body text-base"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Files Area */}
-        <div className="flex flex-col gap-8">
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="font-headline">Shared Files</CardTitle>
-              <CardDescription>
-                Files uploaded here are available for 1 hour.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <ScrollArea className="h-full max-h-[250px] pr-4">
-                <div className="space-y-3">
-                  {files.length > 0 ? (
-                    files.map((file) => (
-                      <div
-                        key={file.$id}
-                        className="flex items-center justify-between rounded-lg border p-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileIcon className="h-6 w-6 text-muted-foreground" />
-                          <div>
-                            <p className="max-w-[200px] truncate text-sm font-medium">
-                              {file.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatFileSize(file.sizeOriginal)} &middot;{' '}
-                              {formatDistanceToNow(new Date(file.$createdAt), {
-                                addSuffix: true,
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDownload(file.$id)}
-                          aria-label={`Download ${file.name}`}
-                        >
-                          <Download className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center text-sm text-muted-foreground">
-                      No files shared yet.
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-            <div className="border-t p-4">
-              {uploading ? (
-                <div>
-                  <div className="flex justify-between text-sm">
-                    <p>Uploading...</p>
-                  </div>
-                  <Progress value={undefined} className="mt-1 h-2" />
-                </div>
-              ) : (
-                <>
-                  <Input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full"
-                  >
-                    <UploadCloud className="mr-2 h-4 w-4" />
-                    Upload File
-                  </Button>
-                </>
-              )}
-            </div>
-          </Card>
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-card font-mono">
+      <div className="flex-1 flex flex-col min-h-0">
+        <Textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Untitled"
+          className="flex-1 w-full h-full p-4 text-base bg-card border-0 rounded-none focus-visible:ring-0 resize-none"
+        />
+      </div>
+      <div className="w-full border-t bg-background">
+        <div className="container flex items-center h-16 gap-4">
+          <div className="flex-1">
+            <h3 className="font-semibold">Shared Files</h3>
+            <p className="text-sm text-muted-foreground">Files are available for 1 hour.</p>
+          </div>
+          <Input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            variant="outline"
+          >
+            {uploading ? (
+              <Loader2 className="mr-2 animate-spin" />
+            ) : (
+              <Upload className="mr-2" />
+            )}
+            Upload File
+          </Button>
         </div>
+        <Separator />
+        <ScrollArea className="h-48">
+          <div className="container py-4">
+            {files.length > 0 ? (
+              <div className="space-y-2">
+                {files.map((file) => (
+                  <div
+                    key={file.$id}
+                    className="flex items-center justify-between rounded-md border p-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileIcon className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="max-w-[200px] truncate text-sm font-medium">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(file.sizeOriginal)} &middot;{' '}
+                          {formatDistanceToNow(new Date(file.$createdAt), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDownload(file.$id)}
+                      aria-label={`Download ${file.name}`}
+                    >
+                      <Download className="h-5 w-5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-sm text-muted-foreground py-10">
+                No files shared yet.
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
