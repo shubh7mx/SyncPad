@@ -4,21 +4,22 @@ import Header from "@/components/header";
 import type { Metadata } from "next";
 
 type Props = {
-  params: { sessionId: string };
+  params: Promise<{ sessionId: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { sessionId } = await params;
   return {
-    title: `Session ${params.sessionId} | SyncPad`,
+    title: `Session ${sessionId} | SyncPad`,
   };
 }
 
 export default async function SessionPage({ params }: Props) {
-  const { sessionId } = params;
+  const { sessionId } = await params;
   const initialData = await getSession(sessionId);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col font-mono bg-[#c0c0c0] text-black">
       <Header sessionId={sessionId} />
       <main className="flex-1">
         <SessionClient sessionId={sessionId} initialData={initialData} />
