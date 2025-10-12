@@ -31,18 +31,14 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-background">
-      <header className="flex h-12 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-2">
-            <NotepadText className="h-6 w-6 text-primary" />
-            <h1 className="text-lg font-semibold tracking-tight">SyncPad</h1>
-        </div>
+      <div className="absolute top-4 right-4">
         <ThemeToggle />
-      </header>
+      </div>
       <main className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md space-y-4">
-            <div className="text-center">
-                <h2 className="text-2xl font-semibold">Welcome to SyncPad</h2>
-                <p className="text-muted-foreground mt-1">The future of collaborative notepads.</p>
+            <div className="flex justify-center items-center gap-2 mb-4">
+                <NotepadText className="h-8 w-8 text-primary" />
+                <h1 className="text-3xl font-semibold tracking-tight">SyncPad</h1>
             </div>
             <div className="rounded-lg border bg-card p-6 shadow-sm">
                 <label htmlFor="session-name" className="text-sm font-medium">Create or open a Pad</label>
