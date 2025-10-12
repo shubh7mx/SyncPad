@@ -1,13 +1,15 @@
 'use client';
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
-import { useEffect, useState, use } from 'react';
-import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload, Files } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarTrigger } from "@/components/ui/menubar";
 import Link from "next/link";
+import { use } from 'react';
+
 
 type Props = {
   params: { sessionId: string };
