@@ -9,19 +9,19 @@ export function Footer() {
           href="https://vlkn.in"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:text-primary"
+          className="hover:underline text-primary"
         >
           VLKN
         </a>
       </div>
       <div className="flex justify-center gap-x-4">
-        <Link href="/privacy-policy" className="underline hover:text-primary">
+        <Link href="/privacy-policy" className="hover:underline hover:text-primary">
           Privacy Policy
         </Link>
-        <Link href="/cookie-policy" className="underline hover:text-primary">
+        <Link href="/cookie-policy" className="hover:underline hover:text-primary">
           Cookie Policy
         </Link>
-        <Link href="/content-policy" className="underline hover:text-primary">
+        <Link href="/content-policy" className="hover:underline hover:text-primary">
           Content Policy
         </Link>
       </div>
