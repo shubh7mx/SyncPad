@@ -14,12 +14,12 @@ export default function Home() {
 
   const createNewSession = () => {
     const sessionId = sessionName.trim() ? sessionName.trim().replace(/\s+/g, '-') : nanoid(8);
-    router.push(`/s/${sessionId}`);
+    router.push(`/${sessionId}`);
   };
   
   const createRandomSession = () => {
     const sessionId = nanoid(8);
-    router.push(`/s/${sessionId}`);
+    router.push(`/${sessionId}`);
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -46,7 +46,7 @@ export default function Home() {
             <div className="rounded-lg border bg-card p-6 shadow-sm">
                 <label htmlFor="session-name" className="text-sm font-medium">Create or open a Pad</label>
                 <div className="flex items-center gap-2 mt-2">
-                    <span className="text-sm text-muted-foreground hidden sm:inline">syncpad.app/s/</span>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">syncpad.app/</span>
                     <Input
                         id="session-name"
                         value={sessionName}
