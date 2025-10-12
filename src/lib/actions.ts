@@ -1,6 +1,6 @@
 'use server';
 
-import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView, InputFile } from './appwrite';
+import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView } from './appwrite';
 import { ID, Query } from 'appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
@@ -63,14 +63,16 @@ export async function uploadFile(sessionId: string, base64File: string, fileName
     }
 
     try {
-        // Convert base64 to Blob and then to an InputFile
+        // Convert base64 to Blob
         const fileBlob = await fetch(base64File).then(res => res.blob());
-        const inputFile = InputFile.fromBlob(fileBlob, fileName);
+        
+        // Create a File object from the Blob
+        const fileToUpload = new File([fileBlob], fileName, { type: fileBlob.type });
 
         const uploadedFile = await storage.createFile(
             AppwriteIds.filesBucketId,
             ID.unique(),
-            inputFile,
+            fileToUpload,
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
