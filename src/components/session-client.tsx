@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { useDebounce } from '@/hooks/use-debounce';
 import { updateText, uploadFile, getSession, deleteFile } from '@/lib/actions';
 import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
@@ -78,10 +77,10 @@ export default function SessionClient({
   const [isFilesVisible, setIsFilesVisible] = useState(true);
   const [isMobileFilesOpen, setIsMobileFilesOpen] = useState(true);
   const [charCount, setCharCount] = useState(initialData.textContent.length);
+  const remoteUpdate = useRef(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const debouncedText = useDebounce(text, 500);
 
   useEffect(() => {
     setIsMounted(true);
@@ -91,10 +90,14 @@ export default function SessionClient({
   }, []);
 
   useEffect(() => {
-    if (isMounted && debouncedText !== initialData.textContent) {
-      updateText(sessionId, debouncedText);
+    if (remoteUpdate.current) {
+        remoteUpdate.current = false;
+        return;
     }
-  }, [debouncedText, sessionId, initialData.textContent, isMounted]);
+    if (isMounted && text !== initialData.textContent) {
+      updateText(sessionId, text);
+    }
+  }, [text, sessionId, initialData.textContent, isMounted]);
 
   useEffect(() => {
     setCharCount(text.length);
@@ -111,6 +114,7 @@ export default function SessionClient({
         
         setText(currentText => {
             if (payload.textContent !== undefined && payload.textContent !== currentText) {
+                remoteUpdate.current = true;
                 return payload.textContent;
             }
             return currentText;
@@ -471,5 +475,3 @@ export default function SessionClient({
     </div>
   );
 }
-
-    
