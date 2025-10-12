@@ -31,8 +31,8 @@ export default function Home() {
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">The simplest way to share text and files online</p>
             <div className="flex items-center gap-2 mt-8 max-w-md mx-auto group">
-                <div className="relative flex-1 group">
-                    <div className="absolute -inset-0.5 bg-[linear-gradient(110deg,hsl(var(--primary)),45%,#ffffff,55%,hsl(var(--primary)))] bg-[length:250%_100%] rounded-lg blur-sm opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition-opacity duration-300 animate-border-shimmer"></div>
+                <div className="relative flex-1">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-primary/80 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                     <div className="flex-1 flex items-center rounded-md bg-black shadow-sm relative">
                         <span className="text-sm text-muted-foreground px-3 py-2.5">syncpad.com/</span>
                         <Input
