@@ -340,11 +340,11 @@ export default function SessionClient({
                     </div>
                     )}
                 </ScrollArea>
+                <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
+                    <p>Files expire in 1 hour</p>
+                </footer>
             </aside>
         </div>
-        <footer className="h-8 border-t flex items-center justify-end px-4 text-xs text-muted-foreground flex-shrink-0">
-            <p>Files expire in 1 hour</p>
-        </footer>
     </div>
   );
 }
