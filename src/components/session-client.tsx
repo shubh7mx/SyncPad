@@ -175,6 +175,11 @@ export default function SessionClient({
     if (lowerSentiment.includes('negative')) return <Frown className="h-5 w-5 text-red-500" />;
     return <Meh className="h-5 w-5 text-yellow-500" />;
   };
+  
+  const handleDownload = async (fileId: string) => {
+    const url = await getFileView(fileId);
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -259,12 +264,10 @@ export default function SessionClient({
                         <Button
                           variant="ghost"
                           size="icon"
-                          asChild
+                          onClick={() => handleDownload(file.$id)}
                           aria-label={`Download ${file.name}`}
                         >
-                          <a href={getFileView(file.$id)} target="_blank" rel="noopener noreferrer">
-                            <Download className="h-5 w-5" />
-                          </a>
+                          <Download className="h-5 w-5" />
                         </Button>
                       </div>
                     ))

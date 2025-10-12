@@ -120,6 +120,6 @@ export async function analyzeSentiment(sessionId: string, text: string): Promise
     }
 }
 
-export function getFileView(fileId: string): string {
+export async function getFileView(fileId: string): Promise<string> {
     return appwriteGetFileView(fileId);
 }
