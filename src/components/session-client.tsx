@@ -15,6 +15,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { formatFileSize } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+
 export default function SessionClient({
   sessionId,
   initialData,
@@ -95,6 +97,18 @@ export default function SessionClient({
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        variant: 'destructive',
+        title: 'File Too Large',
+        description: `The maximum file size is ${formatFileSize(MAX_FILE_SIZE)}.`,
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
 
     setUploading(true);
     try {
