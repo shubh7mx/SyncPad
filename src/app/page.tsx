@@ -23,10 +23,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background text-foreground font-sans dark">
+    <div className="flex flex-col h-screen w-full bg-black text-foreground font-sans dark">
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="w-full max-w-lg space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-wider animate-text-shimmer bg-[linear-gradient(110deg,hsl(var(--primary)),45%,hsl(var(--foreground)),55%,hsl(var(--primary)))] bg-[length:250%_100%] bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold tracking-wider animate-text-shimmer bg-[linear-gradient(110deg,hsl(var(--primary)),45%,#ffffff,55%,hsl(var(--primary)))] bg-[length:250%_100%] bg-clip-text text-transparent">
                 SYNCPAD
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">The simplest way to share text and files online</p>
