@@ -9,7 +9,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
-    title: `Session ${params.sessionId} | Synonym`,
+    title: `Session ${params.sessionId} | SyncPad`,
   };
 }
 

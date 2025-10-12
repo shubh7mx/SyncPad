@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Synonym',
+  title: 'SyncPad',
   description: 'Anonymous real-time syncing of text, images, and files.',
 };
 

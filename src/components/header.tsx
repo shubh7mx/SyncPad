@@ -31,7 +31,7 @@ export default function Header({ sessionId }: { sessionId: string }) {
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <Link href="/" className="flex items-center gap-2">
           <SynonymIcon className="h-8 w-8 text-primary" />
-          <h1 className="font-headline text-2xl font-bold tracking-tight">Synonym</h1>
+          <h1 className="font-headline text-2xl font-bold tracking-tight">SyncPad</h1>
         </Link>
         <div className="flex flex-1 items-center justify-end space-x-4">
           <Button onClick={handleCopy} variant="ghost" size="sm">
