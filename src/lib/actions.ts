@@ -55,13 +55,14 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(sessionId: string, formData: FormData): Promise<FileObject | null> {
+export async function uploadFile(formData: FormData): Promise<FileObject | null> {
     await getAnonymousSession();
 
     const fileData = formData.get('file') as File | null;
+    const sessionId = formData.get('sessionId') as string | null;
     
-    if (!fileData) {
-        throw new Error('No file found in form data');
+    if (!fileData || !sessionId) {
+        throw new Error('File or session ID not found in form data');
     }
 
     try {

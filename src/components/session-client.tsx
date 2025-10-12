@@ -241,14 +241,16 @@ export default function SessionClient({
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('sessionId', sessionId);
       
-      await uploadFile(sessionId, formData);
+      await uploadFile(formData);
       
       toast({
         title: 'File Uploaded',
         description: `${file.name} is now available.`,
       });
     } catch (error) {
+      console.error('Upload error in SessionClient:', error);
       toast({
         variant: 'destructive',
         title: 'Upload Failed',
