@@ -1,6 +1,6 @@
 'use server';
 
-import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView } from './appwrite';
+import { databases, storage, AppwriteIds, getAnonymousSession } from './appwrite';
 import { ID, Query } from 'appwrite';
 import { InputFile } from 'node-appwrite';
 import type { SessionData, FileObject } from './definitions';
@@ -100,7 +100,7 @@ export async function uploadFile({ sessionId, fileData, fileName, fileType }: Up
 
 export async function getFileView(fileId: string): Promise<string> {
     await getAnonymousSession();
-    const url = appwriteGetFileView(fileId);
+    const url = storage.getFileView(AppwriteIds.filesBucketId, fileId).href;
     return url;
 }
 
