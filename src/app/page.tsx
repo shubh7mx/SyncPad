@@ -25,7 +25,7 @@ export default function Home() {
   const [sessionName, setSessionName] = useState('');
 
   const createNewSession = () => {
-    const sessionId = sessionName.trim() ? sessionName.trim().replace(/\s+/g, '-') : 'your-secret-page';
+    const sessionId = sessionName.trim() ? sessionName.trim().replace(/[\s-]+/g, '') : 'your-secret-page';
     router.push(`/${sessionId}`);
   };
 
@@ -33,7 +33,7 @@ export default function Home() {
     const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
     const noun = nouns[Math.floor(Math.random() * nouns.length)];
     const num = Math.floor(Math.random() * 100);
-    const sessionId = `${adj}-${noun}-${num}`;
+    const sessionId = `${adj}${noun}${num}`;
     router.push(`/${sessionId}`);
   }
 
@@ -44,13 +44,13 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full text-foreground font-sans bg-black">
+    <div className="flex flex-col h-screen w-full text-foreground font-sans">
         <div className="absolute top-4 right-4">
             <ThemeToggle />
         </div>
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="w-full max-w-lg space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-wider animate-text-shimmer bg-[linear-gradient(110deg,hsl(var(--primary)),45%,#ffffff,55%,hsl(var(--primary)))] bg-[length:250%_100%] bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold tracking-wider animate-text-shimmer bg-[linear-gradient(110deg,hsl(var(--primary)),45%,hsl(var(--foreground)),55%,hsl(var(--primary)))] bg-[length:250%_100%] bg-clip-text text-transparent">
                 SYNCPAD
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">The simplest way to share text and files online</p>
