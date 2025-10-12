@@ -40,9 +40,7 @@ export default function SessionClient({
 }) {
   const [text, setText] = useState(initialData.textContent);
   const [files, setFiles] = useState<FileObject[]>(initialData.files);
-  const [uploading, setUploading] = useState<
-    { name: string; progress: number } | false
-  >(false);
+  const [uploading, setUploading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -85,21 +83,16 @@ export default function SessionClient({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploading({ name: file.name, progress: 0 });
+    setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      // The `uploadFile` action will now handle the Appwrite SDK call
       const newFile = await uploadFile(
         sessionId,
-        formData,
-        (progress) => {
-          setUploading({ name: file.name, progress: progress.progress });
-        }
+        formData
       );
       if (newFile) {
-        // The subscription will handle updating the file list for all clients
         toast({
           title: 'File Uploaded',
           description: `${file.name} is now available.`,
@@ -200,10 +193,9 @@ export default function SessionClient({
               {uploading ? (
                 <div>
                   <div className="flex justify-between text-sm">
-                    <p className="truncate">{uploading.name}</p>
-                    <p>{Math.round(uploading.progress)}%</p>
+                    <p>Uploading...</p>
                   </div>
-                  <Progress value={uploading.progress} className="mt-1 h-2" />
+                  <Progress value={undefined} className="mt-1 h-2" />
                 </div>
               ) : (
                 <>

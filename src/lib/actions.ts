@@ -55,7 +55,7 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(sessionId: string, formData: FormData, onProgress: (progress: { progress: number }) => void): Promise<FileObject | null> {
+export async function uploadFile(sessionId: string, formData: FormData): Promise<FileObject | null> {
     await getAnonymousSession();
     const file = formData.get('file') as File;
     if (!file) {
@@ -66,8 +66,7 @@ export async function uploadFile(sessionId: string, formData: FormData, onProgre
         const uploadedFile = await storage.createFile(
             AppwriteIds.filesBucketId,
             ID.unique(),
-            file,
-            undefined // permissions
+            file
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
