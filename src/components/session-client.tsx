@@ -221,6 +221,21 @@ export default function SessionClient({
     };
   }, [sessionId, files, isMounted, text]);
 
+  const fileToBas64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const result = reader.result as string;
+            // remove 'data:*/*;base64,' prefix
+            const base64 = result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+    });
+  }
+
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -239,11 +254,14 @@ export default function SessionClient({
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('sessionId', sessionId);
+      const fileData = await fileToBas64(file);
       
-      await uploadFile(formData);
+      await uploadFile({
+        sessionId,
+        fileData,
+        fileName: file.name,
+        fileType: file.type,
+      });
       
       toast({
         title: 'File Uploaded',

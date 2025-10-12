@@ -1,7 +1,7 @@
 'use server';
 
 import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView } from './appwrite';
-import { ID, Query } from 'appwrite';
+import { ID, Query, InputFile } from 'appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 
@@ -55,21 +55,28 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(formData: FormData): Promise<FileObject | null> {
-    await getAnonymousSession();
+type UploadFileParams = {
+  sessionId: string;
+  fileData: string; // base64 encoded string
+  fileName: string;
+  fileType: string;
+}
 
-    const fileData = formData.get('file') as File | null;
-    const sessionId = formData.get('sessionId') as string | null;
+export async function uploadFile({ sessionId, fileData, fileName, fileType }: UploadFileParams): Promise<FileObject | null> {
+    await getAnonymousSession();
     
-    if (!fileData || !sessionId) {
-        throw new Error('File or session ID not found in form data');
+    if (!fileData || !sessionId || !fileName || !fileType) {
+        throw new Error('File data, session ID, file name, or file type not provided');
     }
 
     try {
+        const fileBuffer = Buffer.from(fileData, 'base64');
+        const inputFile = InputFile.fromBuffer(fileBuffer, fileName, fileType);
+
         const uploadedFile = await storage.createFile(
             AppwriteIds.filesBucketId,
             ID.unique(),
-            fileData,
+            inputFile,
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
