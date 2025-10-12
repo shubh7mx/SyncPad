@@ -1,7 +1,7 @@
 'use server';
 
-import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView } from './appwrite';
-import { ID, Query, InputFile } from 'appwrite';
+import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView, InputFile } from './appwrite';
+import { ID, Query } from 'appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 

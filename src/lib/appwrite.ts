@@ -6,7 +6,7 @@ const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
 export const AppwriteIds = {
     databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
     sessionsCollectionId: process.env.NEXT_PUBLIC_APPWRITE_SESSIONS_COLLECTION_ID!,
-    filesBucketId: process.env.NEXT_PUBLIC_APPWRITE_FILES_BUCKET_ID!,
+    filesBucketId: '68eb5618003889cb79c5',
 };
 
 const appwriteClient = new Client().setEndpoint(endpoint).setProject(projectId);
