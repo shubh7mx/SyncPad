@@ -67,6 +67,34 @@ const FileExpirationTimer = ({ createdAt }: { createdAt: string }) => {
     );
 };
 
+const ClickableText = ({ text, onClick }: { text: string; onClick: () => void }) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+  
+    return (
+      <div 
+        onClick={onClick}
+        className="w-full h-full p-4 pb-10 text-base font-mono whitespace-pre-wrap cursor-text"
+      >
+        {parts.map((part, i) =>
+          urlRegex.test(part) ? (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:text-primary/80"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </a>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </div>
+    );
+  };
 
 export default function SessionClient({
   sessionId,
@@ -84,6 +112,8 @@ export default function SessionClient({
   const [charCount, setCharCount] = useState(initialData.textContent.length);
   const remoteUpdate = useRef(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -116,6 +146,12 @@ export default function SessionClient({
     }
     setFiles(cleanupExpiredFiles(initialData.files));
   }, []);
+
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isEditing]);
 
   useEffect(() => {
     if (remoteUpdate.current) {
@@ -278,12 +314,18 @@ export default function SessionClient({
     <div className="flex-1 grid md:grid-cols-[1fr_auto] overflow-hidden">
       <div className="flex flex-col h-full relative">
         <div className='flex-1 relative'>
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Type Here..."
-            className="w-full h-full p-4 pb-10 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
-          />
+        {isEditing ? (
+            <Textarea
+                ref={textareaRef}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onBlur={() => setIsEditing(false)}
+                placeholder="Type Here..."
+                className="w-full h-full p-4 pb-10 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
+            />
+            ) : (
+            <ClickableText text={text} onClick={() => setIsEditing(true)} />
+        )}
           <div className={cn(
               "absolute bottom-2 right-4 text-xs text-muted-foreground transition-all duration-300 ease-in-out",
               isFilesVisible ? "md:right-[21rem]" : "md:right-4"
