@@ -1,7 +1,7 @@
 'use client';
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ type Props = {
   params: { sessionId: string };
 };
 
-export default function SessionPage({ params: { sessionId } }: Props) {
+export default function SessionPage({ params }: Props) {
+  const { sessionId } = use(params);
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
 
