@@ -10,7 +10,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { updateText, uploadFile, getSession, deleteFile } from '@/lib/actions';
 import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
-import { File as FileIcon, Upload, Download, Loader2, X, Trash2, PlusCircle, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { File as FileIcon, Upload, Download, Loader2, X, Trash2, PlusCircle, PanelRightOpen, PanelRightClose, ChevronDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFileSize, cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
@@ -76,6 +76,7 @@ export default function SessionClient({
   const [uploading, setUploading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isFilesVisible, setIsFilesVisible] = useState(true);
+  const [isMobileFilesOpen, setIsMobileFilesOpen] = useState(true);
   const [charCount, setCharCount] = useState(initialData.textContent.length);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -222,110 +223,120 @@ export default function SessionClient({
           </div>
         </div>
         <div className="md:hidden">
-          <aside className={cn("border-t bg-card flex flex-col h-full")}>
-              <div className="flex items-center justify-between p-2 border-b h-12 flex-shrink-0">
-                  <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-full h-8 w-8 p-0"
-                  >
-                      {uploading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                      <PlusCircle className="h-6 w-6" />
-                      )}
-                  </Button>
+            <aside className={cn("border-t bg-card flex flex-col")}>
+                <div 
+                    className="flex items-center justify-between p-2 border-b h-12 flex-shrink-0"
+                    onClick={() => setIsMobileFilesOpen(!isMobileFilesOpen)}
+                >
+                    <Button
+                        onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                        disabled={uploading}
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full h-8 w-8 p-0"
+                    >
+                        {uploading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                        <PlusCircle className="h-6 w-6" />
+                        )}
+                    </Button>
 
-                  <h3 className="font-semibold text-sm whitespace-nowrap">Files</h3>
-                  
-                  <div className="w-8"></div>
-                  
-                  <Input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      className="hidden"
-                  />
-              </div>
-              <ScrollArea className="flex-1 p-2">
-                  {files.length > 0 ? (
-                  <div className="space-y-2">
-                      {files.map((file) => (
-                      <div
-                          key={file.$id}
-                          className="flex flex-col rounded-md border bg-background/50 group"
-                      >
-                          <div className="flex items-center justify-between p-2">
-                              <div className="flex items-center gap-3 overflow-hidden">
-                                  <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                                  <div className="truncate">
-                                      <p className="truncate text-sm font-medium">
-                                      {file.name}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                      {formatFileSize(file.sizeOriginal)} &middot;{' '}
-                                      {formatDistanceToNow(new Date(file.$createdAt), {
-                                          addSuffix: true,
-                                      })}
-                                      </p>
-                                  </div>
-                              </div>
-                              <div className="flex flex-shrink-0">
-                                  <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDownload(file.$id)}
-                                  aria-label={`Download ${file.name}`}
-                                  className="h-8 w-8"
-                                  >
-                                  <Download className="h-5 w-5" />
-                                  </Button>
-                                  <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                          <Button
-                                              variant="ghost"
-                                              size="icon"
-                                              className="text-muted-foreground hover:text-destructive h-8 w-8"
-                                              aria-label={`Delete ${file.name}`}
-                                          >
-                                              <Trash2 className="h-5 w-5" />
-                                          </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                              This action cannot be undone. This will permanently delete the file "{file.name}" from this session.
-                                          </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleDelete(file.$id)}>
-                                              Delete
-                                          </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                  </AlertDialog>
-                              </div>
-                          </div>
-                          <div className="px-2 pb-2">
-                              <FileExpirationTimer createdAt={file.$createdAt} />
-                          </div>
-                      </div>
-                      ))}
-                  </div>
-                  ) : (
-                  <div className="text-center text-sm text-muted-foreground py-10 px-4">
-                      No files have been shared in this pad.
-                  </div>
-                  )}
-              </ScrollArea>
-              <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
-                  <p className='whitespace-nowrap'>Files expire in 1 hour</p>
-              </footer>
-          </aside>
+                    <h3 className="font-semibold text-sm whitespace-nowrap">Files</h3>
+                    
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <ChevronDown className={cn("h-5 w-5 transition-transform", isMobileFilesOpen && "rotate-180")} />
+                    </Button>
+                    
+                    <Input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+                </div>
+                <div className={cn(
+                    "transition-all duration-300 ease-in-out overflow-hidden",
+                    isMobileFilesOpen ? 'max-h-[260px]' : 'max-h-0'
+                )}>
+                    <ScrollArea className={cn("flex-1 p-2", files.length > 2 ? "h-[250px]" : "h-auto")}>
+                        {files.length > 0 ? (
+                        <div className="space-y-2">
+                            {files.map((file) => (
+                            <div
+                                key={file.$id}
+                                className="flex flex-col rounded-md border bg-background/50 group"
+                            >
+                                <div className="flex items-center justify-between p-2">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                                        <div className="truncate">
+                                            <p className="truncate text-sm font-medium">
+                                            {file.name}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                            {formatFileSize(file.sizeOriginal)} &middot;{' '}
+                                            {formatDistanceToNow(new Date(file.$createdAt), {
+                                                addSuffix: true,
+                                            })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-shrink-0">
+                                        <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleDownload(file.$id)}
+                                        aria-label={`Download ${file.name}`}
+                                        className="h-8 w-8"
+                                        >
+                                        <Download className="h-5 w-5" />
+                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-muted-foreground hover:text-destructive h-8 w-8"
+                                                    aria-label={`Delete ${file.name}`}
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete the file "{file.name}" from this session.
+                                                </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(file.$id)}>
+                                                    Delete
+                                                </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+                                </div>
+                                <div className="px-2 pb-2">
+                                    <FileExpirationTimer createdAt={file.$createdAt} />
+                                </div>
+                            </div>
+                            ))}
+                        </div>
+                        ) : (
+                        <div className="text-center text-sm text-muted-foreground py-10 px-4">
+                            No files have been shared in this pad.
+                        </div>
+                        )}
+                    </ScrollArea>
+                    <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
+                        <p className='whitespace-nowrap'>Files expire in 1 hour</p>
+                    </footer>
+                </div>
+            </aside>
         </div>
       </div>
       <div className='relative hidden md:block'>
@@ -460,3 +471,5 @@ export default function SessionClient({
     </div>
   );
 }
+
+    
