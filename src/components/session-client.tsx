@@ -286,7 +286,7 @@ export default function SessionClient({
           />
           <div className={cn(
               "absolute bottom-2 right-4 text-xs text-muted-foreground transition-all duration-300 ease-in-out",
-              isFilesVisible && "md:right-[21rem]"
+              isFilesVisible ? "md:right-[21rem]" : "md:right-4"
           )}>
               Count: {charCount}
           </div>
@@ -336,20 +336,18 @@ export default function SessionClient({
                                 key={file.$id}
                                 className="flex flex-col rounded-md border bg-background/50 group"
                             >
-                                <div className="flex items-center justify-between p-2">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                                        <div className="truncate">
-                                            <p className="truncate text-sm font-medium">
-                                            {file.name}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                            {formatFileSize(file.sizeOriginal)} &middot;{' '}
-                                            {formatDistanceToNow(new Date(file.$createdAt), {
-                                                addSuffix: true,
-                                            })}
-                                            </p>
-                                        </div>
+                                <div className="flex items-center justify-between p-2 gap-2">
+                                    <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="truncate text-sm font-medium">
+                                        {file.name}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground truncate">
+                                        {formatFileSize(file.sizeOriginal)} &middot;{' '}
+                                        {formatDistanceToNow(new Date(file.$createdAt), {
+                                            addSuffix: true,
+                                        })}
+                                        </p>
                                     </div>
                                     <div className="flex flex-shrink-0">
                                         <Button
@@ -482,20 +480,18 @@ export default function SessionClient({
                         key={file.$id}
                         className="flex flex-col rounded-md border bg-background/50 group"
                     >
-                        <div className="flex items-center justify-between p-2">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                                <div className="truncate">
-                                    <p className="truncate text-sm font-medium">
-                                    {file.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                    {formatFileSize(file.sizeOriginal)} &middot;{' '}
-                                    {formatDistanceToNow(new Date(file.$createdAt), {
-                                        addSuffix: true,
-                                    })}
-                                    </p>
-                                </div>
+                        <div className="flex items-center justify-between p-2 gap-2">
+                            <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                            <div className="flex-1 min-w-0">
+                                <p className="truncate text-sm font-medium">
+                                {file.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                {formatFileSize(file.sizeOriginal)} &middot;{' '}
+                                {formatDistanceToNow(new Date(file.$createdAt), {
+                                    addSuffix: true,
+                                })}
+                                </p>
                             </div>
                             <div className="flex flex-shrink-0">
                                 <Button
