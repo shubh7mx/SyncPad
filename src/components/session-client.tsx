@@ -19,6 +19,7 @@ import {
   updateText,
   uploadFile,
   getFileView,
+  getSession,
 } from '@/lib/actions';
 import { appwriteClient, subscribe, AppwriteIds } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
@@ -54,37 +55,31 @@ export default function SessionClient({
   }, [debouncedText, sessionId, initialData.textContent]);
 
   useEffect(() => {
-    const unsubscribe = subscribe(
-      `databases.${AppwriteIds.databaseId}.collections.${AppwriteIds.sessionsCollectionId}.documents.${sessionId}`,
-      (response) => {
-        const payload = response.payload as {
-          textContent: string;
-          files: string[];
-        };
-
-        setText(payload.textContent);
-
-        const newFiles = payload.files
-          .map((fileId) => {
-            const existingFile = files.find((f) => f.$id === fileId);
-            if (existingFile) return existingFile;
-            // A new file was added, we need to fetch its details.
-            // This is a simplified approach. A more robust solution might fetch details here.
-            // For now, we rely on the uploader's client to have the full file object.
-            return null;
-          })
-          .filter(Boolean) as FileObject[];
+    const channel = `databases.${AppwriteIds.databaseId}.collections.${AppwriteIds.sessionsCollectionId}.documents.${sessionId}`;
+    
+    const unsubscribe = subscribe(channel, (response) => {
+        const payload = response.payload as SessionData & { files: string[] };
         
-        // This logic is imperfect because non-uploading clients won't have file details.
-        // A full implementation would involve another action to get file details.
-        if (newFiles.length !== files.length) {
-            // A simple refresh might be the easiest way to get full file data
-            window.location.reload();
+        // Update text content
+        if (payload.textContent !== undefined && payload.textContent !== text) {
+            setText(payload.textContent);
         }
-      }
-    );
-    return () => unsubscribe();
-  }, [sessionId, files]);
+
+        // Check if file list has changed
+        if (payload.files && payload.files.length !== files.length) {
+            // Refetch the entire session data to get full file details
+            getSession(sessionId).then(newData => {
+                setFiles(newData.files);
+            });
+        }
+    });
+
+    return () => {
+        unsubscribe();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -95,11 +90,16 @@ export default function SessionClient({
     formData.append('file', file);
 
     try {
-      const newFile = await uploadFile(sessionId, formData, (progress) => {
-        setUploading({ name: file.name, progress: progress.progress });
-      });
+      // The `uploadFile` action will now handle the Appwrite SDK call
+      const newFile = await uploadFile(
+        sessionId,
+        formData,
+        (progress) => {
+          setUploading({ name: file.name, progress: progress.progress });
+        }
+      );
       if (newFile) {
-        setFiles((prevFiles) => [...prevFiles, newFile]);
+        // The subscription will handle updating the file list for all clients
         toast({
           title: 'File Uploaded',
           description: `${file.name} is now available.`,

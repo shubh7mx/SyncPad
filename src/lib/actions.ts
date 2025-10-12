@@ -16,8 +16,8 @@ export async function getSession(sessionId: string): Promise<SessionData> {
 
     const fileIds = (document.files || []) as string[];
     const fileObjects: FileObject[] = await Promise.all(
-        fileIds.map(id => storage.getFile(AppwriteIds.filesBucketId, id))
-    );
+        fileIds.map(id => storage.getFile(AppwriteIds.filesBucketId, id).catch(() => null))
+    ).then(results => results.filter(f => f !== null) as FileObject[]);
 
     return {
       textContent: document.textContent as string,
@@ -56,7 +56,7 @@ export async function updateText(sessionId: string, text: string) {
 }
 
 export async function uploadFile(sessionId: string, formData: FormData, onProgress: (progress: { progress: number }) => void): Promise<FileObject | null> {
-    const session = await getAnonymousSession();
+    await getAnonymousSession();
     const file = formData.get('file') as File;
     if (!file) {
         throw new Error('No file provided');
@@ -67,15 +67,7 @@ export async function uploadFile(sessionId: string, formData: FormData, onProgre
             AppwriteIds.filesBucketId,
             ID.unique(),
             file,
-            undefined, // permissions
-            (progress) => {
-                // This callback runs client-side. We pass a server action reference for progress.
-                // However, Appwrite SDK v11+ progress is client-side only. This will require a client-side upload approach.
-                // The prompt assumes a server action based upload. A client-side upload is better for progress.
-                // For this implementation, we'll do the upload client side.
-                // The provided code in `session-client` will handle this. This server action is a workaround to fit the model.
-                // In a real app, the client would call storage.createFile directly.
-            }
+            undefined // permissions
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
