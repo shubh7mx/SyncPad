@@ -7,13 +7,13 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
-import { updateText, uploadFile, getSession } from '@/lib/actions';
+import { updateText, uploadFile, getSession, deleteFile } from '@/lib/actions';
 import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
-import { File as FileIcon, Upload, Download, Loader2, X } from 'lucide-react';
+import { File as FileIcon, Upload, Download, Loader2, X, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFileSize } from '@/lib/utils';
-import { Separator } from './ui/separator';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 export default function SessionClient({
   sessionId,
@@ -124,6 +124,23 @@ export default function SessionClient({
     window.open(url, '_blank');
   };
 
+  const handleDelete = async (fileId: string) => {
+    try {
+      await deleteFile(sessionId, fileId);
+      toast({
+        title: 'File Deleted',
+        description: 'The file has been removed successfully.',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Delete Failed',
+        description: error instanceof Error ? error.message : 'Could not delete file.',
+      });
+    }
+  };
+
+
   return (
     <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] overflow-hidden">
         <div className="flex flex-col h-full">
@@ -175,7 +192,7 @@ export default function SessionClient({
                         {files.map((file) => (
                         <div
                             key={file.$id}
-                            className="flex items-center justify-between rounded-md border p-2 bg-background/50"
+                            className="flex items-center justify-between rounded-md border p-2 bg-background/50 group"
                         >
                             <div className="flex items-center gap-3 overflow-hidden">
                             <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
@@ -191,15 +208,42 @@ export default function SessionClient({
                                 </p>
                             </div>
                             </div>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDownload(file.$id)}
-                            aria-label={`Download ${file.name}`}
-                            className="flex-shrink-0"
-                            >
-                            <Download className="h-5 w-5" />
-                            </Button>
+                            <div className="flex flex-shrink-0">
+                                <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDownload(file.$id)}
+                                aria-label={`Download ${file.name}`}
+                                >
+                                <Download className="h-5 w-5" />
+                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground hover:text-destructive"
+                                            aria-label={`Delete ${file.name}`}
+                                        >
+                                            <Trash2 className="h-5 w-5" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the file "{file.name}" from this session.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(file.$id)}>
+                                            Delete
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
                         </div>
                         ))}
                     </div>

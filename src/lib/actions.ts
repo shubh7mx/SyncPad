@@ -98,3 +98,35 @@ export async function getFileView(fileId: string): Promise<string> {
     const url = appwriteGetFileView(fileId);
     return url;
 }
+
+export async function deleteFile(sessionId: string, fileId: string) {
+  await getAnonymousSession();
+  try {
+    // Delete file from storage
+    await storage.deleteFile(AppwriteIds.filesBucketId, fileId);
+
+    // Get the document to update the files array
+    const document = await databases.getDocument(
+      AppwriteIds.databaseId,
+      AppwriteIds.sessionsCollectionId,
+      sessionId
+    );
+    const currentFiles = (document.files || []) as string[];
+
+    // Remove the file ID from the array
+    const updatedFiles = currentFiles.filter((id) => id !== fileId);
+
+    // Update the document with the new file list
+    await databases.updateDocument(
+      AppwriteIds.databaseId,
+      AppwriteIds.sessionsCollectionId,
+      sessionId,
+      { files: updatedFiles }
+    );
+
+    revalidatePath(`/s/${sessionId}`);
+  } catch (error) {
+    console.error('Failed to delete file:', error);
+    throw new Error('Could not delete file.');
+  }
+}
