@@ -18,6 +18,11 @@ import { Progress } from './ui/progress';
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 const FILE_EXPIRATION_HOURS = 1;
 
+const isFileExpired = (createdAt: string) => {
+  const expirationTime = new Date(createdAt).getTime() + FILE_EXPIRATION_HOURS * 60 * 60 * 1000;
+  return new Date().getTime() > expirationTime;
+}
+
 const FileExpirationTimer = ({ createdAt }: { createdAt: string }) => {
     const [timeLeft, setTimeLeft] = useState(100);
     const expirationTime = new Date(createdAt).getTime() + FILE_EXPIRATION_HOURS * 60 * 60 * 1000;
@@ -71,7 +76,7 @@ export default function SessionClient({
   initialData: SessionData;
 }) {
   const [text, setText] = useState(initialData.textContent);
-  const [files, setFiles] = useState<FileObject[]>(initialData.files);
+  const [files, setFiles] = useState<FileObject[]>(initialData.files.filter(f => !isFileExpired(f.$createdAt)));
   const [uploading, setUploading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isFilesVisible, setIsFilesVisible] = useState(true);
@@ -134,7 +139,7 @@ export default function SessionClient({
 
         if (newFileIds !== currentFileIds) {
           getSession(sessionId).then(newData => {
-            setFiles(newData.files);
+            setFiles(newData.files.filter(f => !isFileExpired(f.$createdAt)));
           });
         }
       });
