@@ -124,13 +124,10 @@ export default function SessionClient({
       return subscribe(channel, (response) => {
         const payload = response.payload as SessionData & { files: string[] };
         
-        setText(currentText => {
-            if (payload.textContent !== undefined && payload.textContent !== currentText) {
-                remoteUpdate.current = true;
-                return payload.textContent;
-            }
-            return currentText;
-        });
+        if (payload.textContent !== undefined && payload.textContent !== text) {
+            remoteUpdate.current = true;
+            setText(payload.textContent);
+        }
 
         const currentFileIds = files.map(f => f.$id).sort().join(',');
         const newFileIds = (payload.files || []).sort().join(',');
@@ -152,7 +149,7 @@ export default function SessionClient({
         unsubscribe();
       }
     };
-  }, [sessionId, files, isMounted]);
+  }, [sessionId, files, isMounted, text]);
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -234,7 +231,11 @@ export default function SessionClient({
             placeholder="Type Here..."
             className="w-full h-full p-4 pb-10 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
           />
-          <div className="absolute bottom-2 left-4 text-xs text-muted-foreground">
+          <div className={cn(
+              "absolute bottom-2 right-4 text-xs text-muted-foreground transition-all duration-300 ease-in-out",
+              "md:right-auto",
+              isFilesVisible ? "md:right-[21rem]" : "md:right-4"
+          )}>
               Count: {charCount}
           </div>
         </div>
