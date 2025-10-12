@@ -1,7 +1,8 @@
 'use server';
 
 import { databases, storage, AppwriteIds, getAnonymousSession } from './appwrite';
-import { ID, Query, InputFile } from 'node-appwrite';
+import { ID, Query } from 'appwrite';
+import { InputFile } from 'node-appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 
@@ -65,8 +66,8 @@ type UploadFileParams = {
 export async function uploadFile({ sessionId, fileData, fileName, fileType }: UploadFileParams): Promise<FileObject | null> {
     await getAnonymousSession();
     
-    if (!fileData || !sessionId || !fileName || !fileType) {
-        throw new Error('File data, session ID, file name, or file type not provided');
+    if (!fileData || !sessionId || !fileName) {
+        throw new Error('File data, session ID, or file name not provided');
     }
 
     try {
