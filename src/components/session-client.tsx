@@ -279,14 +279,33 @@ export default function SessionClient({
     }
   };
   
-  const handleDownload = (fileId: string, fileName: string) => {
-    const url = getFileView(fileId);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (fileId: string, fileName: string) => {
+    try {
+      const url = getFileView(fileId);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Network response was not ok.');
+      }
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+  
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Download Failed',
+        description: 'Could not download the file.',
+      });
+    }
   };
 
   const handleDelete = async (fileId: string) => {
