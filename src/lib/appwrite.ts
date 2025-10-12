@@ -1,4 +1,4 @@
-import { Client, Databases, Storage, Account, AppwriteException } from 'appwrite';
+import { Client, Databases, Storage, Account, AppwriteException, InputFile } from 'appwrite';
 
 const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
 const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
@@ -38,4 +38,4 @@ export function getFileView(fileId: string): string {
 }
 
 
-export { appwriteClient };
+export { appwriteClient, InputFile };

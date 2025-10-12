@@ -1,7 +1,7 @@
 'use server';
 
 import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView } from './appwrite';
-import { ID, Query } from 'appwrite';
+import { ID, Query, InputFile } from 'appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 
@@ -55,18 +55,22 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(sessionId: string, file: File): Promise<FileObject | null> {
+export async function uploadFile(sessionId: string, base64File: string, fileName: string): Promise<FileObject | null> {
     await getAnonymousSession();
 
-    if (!file) {
+    if (!base64File) {
         throw new Error('No file provided');
     }
 
     try {
+        // Convert base64 to Blob and then to an InputFile
+        const fileBlob = await fetch(base64File).then(res => res.blob());
+        const inputFile = InputFile.fromBlob(fileBlob, fileName);
+
         const uploadedFile = await storage.createFile(
             AppwriteIds.filesBucketId,
             ID.unique(),
-            file
+            inputFile,
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
@@ -85,6 +89,7 @@ export async function uploadFile(sessionId: string, file: File): Promise<FileObj
         throw new Error('File upload failed. Check file size, type limits, and bucket permissions.');
     }
 }
+
 
 export async function getFileView(fileId: string): Promise<string> {
     await getAnonymousSession();
