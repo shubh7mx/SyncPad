@@ -1,9 +1,8 @@
 'use client';
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
-import type { Metadata } from "next";
 import { useEffect, useState } from 'react';
-import { NotepadText, Link as LinkIcon, Home, File, Edit, View, HelpCircle, Check, ClipboardCopy, HardDriveDownload } from "lucide-react";
+import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -14,16 +13,7 @@ type Props = {
   params: { sessionId: string };
 };
 
-// This needs to be outside to avoid re-declaration
-// export async function generateMetadata({ params }: Props): Promise<Metadata> {
-//   const { sessionId } = await params;
-//   return {
-//     title: `${sessionId} - SyncPad`,
-//   };
-// }
-
-export default function SessionPage({ params }: Props) {
-  const { sessionId } = params;
+export default function SessionPage({ params: { sessionId } }: Props) {
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
 
