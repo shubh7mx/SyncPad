@@ -337,7 +337,7 @@ export default function SessionClient({
                                 className="flex flex-col rounded-md border bg-background/50 group"
                             >
                                 <div className="flex items-center justify-between p-2">
-                                    <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="flex items-center gap-3 min-w-0">
                                         <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                                         <div className="truncate">
                                             <p className="truncate text-sm font-medium">
@@ -483,7 +483,7 @@ export default function SessionClient({
                         className="flex flex-col rounded-md border bg-background/50 group"
                     >
                         <div className="flex items-center justify-between p-2">
-                            <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="flex items-center gap-3 min-w-0">
                                 <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                                 <div className="truncate">
                                     <p className="truncate text-sm font-medium">
