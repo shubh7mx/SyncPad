@@ -31,16 +31,19 @@ export default function Home() {
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">The simplest way to share text and files online</p>
             <div className="flex items-center gap-2 mt-8 max-w-md mx-auto group">
-                <div className="flex-1 flex items-center rounded-md bg-secondary/50 shadow-sm border border-transparent group-focus-within:border-primary/50 group-focus-within:ring-2 group-focus-within:ring-primary/20 transition-all">
-                    <span className="text-sm text-muted-foreground px-3 py-2.5">syncpad.com/</span>
-                    <Input
-                        id="session-name"
-                        value={sessionName}
-                        onChange={(e) => setSessionName(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="your-secret-page"
-                        className="flex-1 border-0 bg-transparent rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-11"
-                    />
+                <div className="relative flex-1 group">
+                    <div className="absolute -inset-0.5 bg-[linear-gradient(110deg,hsl(var(--primary)),45%,#ffffff,55%,hsl(var(--primary)))] bg-[length:250%_100%] rounded-lg blur-sm opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition-opacity duration-300 animate-border-shimmer"></div>
+                    <div className="flex-1 flex items-center rounded-md bg-black shadow-sm relative">
+                        <span className="text-sm text-muted-foreground px-3 py-2.5">syncpad.com/</span>
+                        <Input
+                            id="session-name"
+                            value={sessionName}
+                            onChange={(e) => setSessionName(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="your-secret-page"
+                            className="flex-1 border-0 bg-transparent rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-11"
+                        />
+                    </div>
                 </div>
                 <Button 
                   onClick={createNewSession} 
