@@ -10,7 +10,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { updateText, uploadFile, getSession, deleteFile } from '@/lib/actions';
 import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
-import { File as FileIcon, Upload, Download, Loader2, X, Trash2 } from 'lucide-react';
+import { File as FileIcon, Upload, Download, Loader2, X, Trash2, PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFileSize, cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
@@ -76,6 +76,7 @@ export default function SessionClient({
   const [uploading, setUploading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isFilesVisible, setIsFilesVisible] = useState(true);
+  const [charCount, setCharCount] = useState(initialData.textContent.length);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -93,6 +94,10 @@ export default function SessionClient({
       updateText(sessionId, debouncedText);
     }
   }, [debouncedText, sessionId, initialData.textContent, isMounted]);
+
+  useEffect(() => {
+    setCharCount(text.length);
+  }, [text]);
   
   useEffect(() => {
     const channel = `databases.${AppwriteIds.databaseId}.collections.${AppwriteIds.sessionsCollectionId}.documents.${sessionId}`;
@@ -203,49 +208,61 @@ export default function SessionClient({
 
 
   return (
-    <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] overflow-hidden">
+    <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] overflow-hidden relative">
         <div className="flex flex-col h-full">
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Start typing..."
+              placeholder="Type Here..."
               className="flex-1 w-full h-full p-4 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
             />
         </div>
-        {isFilesVisible && (
-            <aside className="w-full md:w-80 border-l flex flex-col h-full">
+        <div className={cn(
+            "absolute inset-y-0 right-0 flex transition-transform duration-300 ease-in-out",
+            isFilesVisible ? "translate-x-0" : "translate-x-full md:translate-x-[calc(100%-1rem)]"
+        )}>
+            <div className="h-full flex items-center">
+                 <button 
+                    onClick={() => setIsFilesVisible(!isFilesVisible)} 
+                    className="z-20 h-10 w-4 bg-muted hover:bg-accent border-y border-l rounded-l-md flex items-center justify-center"
+                    aria-label={isFilesVisible ? "Collapse file panel" : "Expand file panel"}
+                 >
+                    {isFilesVisible ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                </button>
+            </div>
+            <aside className="w-80 border-l bg-card flex flex-col h-full">
                 <div className="flex items-center justify-between p-2 border-b h-12">
-                    <h3 className="font-semibold px-2">Shared Files</h3>
-                    <div className="flex items-center gap-1">
-                        <Input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-                        <Button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Upload File"
-                        >
-                            {uploading ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                            <Upload className="h-5 w-5" />
-                            )}
-                        </Button>
-                        <Button
-                            onClick={() => setIsFilesVisible(false)}
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Close Files Panel"
-                            className="md:hidden"
-                        >
-                            <X className="h-5 w-5" />
-                        </Button>
-                    </div>
+                    <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full h-8 w-8 p-0"
+                    >
+                        {uploading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                        <PlusCircle className="h-6 w-6" />
+                        )}
+                    </Button>
+
+                    <h3 className="font-semibold text-sm">Files</h3>
+                    
+                    <Button
+                        onClick={() => setIsFilesVisible(false)}
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Close Files Panel"
+                        className="h-8 w-8"
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
+                    <Input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
                 </div>
                 <ScrollArea className="flex-1 p-2">
                     {files.length > 0 ? (
@@ -276,6 +293,7 @@ export default function SessionClient({
                                     size="icon"
                                     onClick={() => handleDownload(file.$id)}
                                     aria-label={`Download ${file.name}`}
+                                    className="h-8 w-8"
                                     >
                                     <Download className="h-5 w-5" />
                                     </Button>
@@ -284,7 +302,7 @@ export default function SessionClient({
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-muted-foreground hover:text-destructive"
+                                                className="text-muted-foreground hover:text-destructive h-8 w-8"
                                                 aria-label={`Delete ${file.name}`}
                                             >
                                                 <Trash2 className="h-5 w-5" />
@@ -319,18 +337,12 @@ export default function SessionClient({
                     </div>
                     )}
                 </ScrollArea>
-                <div className="p-2 border-t text-xs text-muted-foreground">
-                  Files are temporary and will be deleted after 1 hour of inactivity.
-                </div>
             </aside>
-        )}
-        {!isFilesVisible && (
-             <div className="absolute bottom-10 right-4 md:hidden">
-                 <Button onClick={() => setIsFilesVisible(true)} size="icon">
-                     <FileIcon />
-                 </Button>
-             </div>
-        )}
+        </div>
+        <footer className="h-8 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
+            <p>Count: {charCount}</p>
+            <p>Deleted in 1Hr</p>
+        </footer>
     </div>
   );
 }
