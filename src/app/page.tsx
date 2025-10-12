@@ -67,6 +67,17 @@ export default function Home() {
             </div>
         </div>
       </main>
+      <footer className="py-4 px-4 text-center text-sm text-muted-foreground">
+        made by{' '}
+        <a
+          href="https://vlkn.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary"
+        >
+          VLKN
+        </a>
+      </footer>
     </div>
   );
 }
