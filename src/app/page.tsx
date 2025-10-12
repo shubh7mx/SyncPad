@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function Home() {
   const router = useRouter();
@@ -23,7 +24,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-black text-foreground font-sans dark">
+    <div className="flex flex-col h-screen w-full bg-background text-foreground font-sans">
+        <div className="absolute top-4 right-4">
+            <ThemeToggle />
+        </div>
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="w-full max-w-lg space-y-6">
             <h1 className="text-5xl md:text-6xl font-bold tracking-wider animate-text-shimmer bg-[linear-gradient(110deg,hsl(var(--primary)),45%,#ffffff,55%,hsl(var(--primary)))] bg-[length:250%_100%] bg-clip-text text-transparent">
@@ -33,7 +37,7 @@ export default function Home() {
             <div className="flex items-center gap-2 mt-8 max-w-md mx-auto group">
                 <div className="relative flex-1">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-primary/80 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="flex-1 flex items-center rounded-md bg-black shadow-sm relative">
+                    <div className="flex-1 flex items-center rounded-md bg-card shadow-sm relative border border-input">
                         <span className="text-sm text-muted-foreground px-3 py-2.5">syncpad.com/</span>
                         <Input
                             id="session-name"
