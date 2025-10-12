@@ -2,9 +2,11 @@
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
 import { useEffect, useState, use } from 'react';
-import { NotepadText } from "lucide-react";
+import { NotepadText, Copy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 type Props = {
   params: Promise<{ sessionId: string }>;
@@ -15,6 +17,7 @@ export default function SessionPage({ params }: Props) {
   const pathname = usePathname();
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadSession() {
@@ -31,6 +34,23 @@ export default function SessionPage({ params }: Props) {
       loadSession();
     }
   }, [sessionId]);
+
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      toast({
+        title: 'Link Copied',
+        description: 'Session link copied to clipboard.',
+      });
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+      toast({
+        variant: 'destructive',
+        title: 'Copy Failed',
+        description: 'Could not copy link to clipboard.',
+      });
+    });
+  };
 
   
   if (loading || !initialData) {
@@ -52,8 +72,13 @@ export default function SessionPage({ params }: Props) {
             <NotepadText className="h-6 w-6 text-primary" />
             <h1>SyncPad</h1>
           </Link>
-          <div className="flex-1 text-center text-sm font-medium text-muted-foreground">
-            {pathname.substring(1)}
+          <div className="flex-1 text-center">
+            <Button variant="ghost" size="sm" onClick={handleCopyLink} className="group">
+              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
+                {pathname.substring(1)}
+              </span>
+              <Copy className="ml-2 h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </Button>
           </div>
           <div className="w-[120px]"></div>
         </header>
