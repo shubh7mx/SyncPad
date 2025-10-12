@@ -208,14 +208,17 @@ export default function SessionClient({
 
 
   return (
-    <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] overflow-hidden relative">
-        <div className="flex flex-col h-full">
+    <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] overflow-hidden">
+        <div className="flex flex-col h-full relative">
             <Textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Type Here..."
-              className="flex-1 w-full h-full p-4 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
+              className="flex-1 w-full h-full p-4 pb-10 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
             />
+            <div className="absolute bottom-2 left-4 text-xs text-muted-foreground">
+                Count: {charCount}
+            </div>
         </div>
         <div className={cn(
             "absolute inset-y-0 right-0 flex transition-transform duration-300 ease-in-out",
@@ -339,9 +342,8 @@ export default function SessionClient({
                 </ScrollArea>
             </aside>
         </div>
-        <footer className="h-8 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
-            <p>Count: {charCount}</p>
-            <p>Deleted in 1Hr</p>
+        <footer className="h-8 border-t flex items-center justify-end px-4 text-xs text-muted-foreground flex-shrink-0">
+            <p>Files expire in 1 hour</p>
         </footer>
     </div>
   );
