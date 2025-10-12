@@ -55,24 +55,20 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(sessionId: string, base64File: string, fileName: string): Promise<FileObject | null> {
+export async function uploadFile(sessionId: string, formData: FormData): Promise<FileObject | null> {
     await getAnonymousSession();
 
-    if (!base64File) {
-        throw new Error('No file provided');
+    const fileData = formData.get('file') as File | null;
+    
+    if (!fileData) {
+        throw new Error('No file found in form data');
     }
 
     try {
-        // Convert base64 to Blob
-        const fileBlob = await fetch(base64File).then(res => res.blob());
-        
-        // Create a File object from the Blob
-        const fileToUpload = new File([fileBlob], fileName, { type: fileBlob.type });
-
         const uploadedFile = await storage.createFile(
             AppwriteIds.filesBucketId,
             ID.unique(),
-            fileToUpload,
+            fileData,
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
@@ -82,7 +78,7 @@ export async function uploadFile(sessionId: string, base64File: string, fileName
             files: [...currentFiles, uploadedFile.$id]
         });
 
-        revalidatePath(`/s/${sessionId}`);
+        revalidatePath(`/${sessionId}`);
         
         return uploadedFile as FileObject;
 
@@ -124,7 +120,7 @@ export async function deleteFile(sessionId: string, fileId: string) {
       { files: updatedFiles }
     );
 
-    revalidatePath(`/s/${sessionId}`);
+    revalidatePath(`/${sessionId}`);
   } catch (error) {
     console.error('Failed to delete file:', error);
     throw new Error('Could not delete file.');
@@ -156,7 +152,7 @@ export async function deleteAllFiles(sessionId: string) {
       { files: [] }
     );
 
-    revalidatePath(`/s/${sessionId}`);
+    revalidatePath(`/${sessionId}`);
   } catch (error) {
     console.error('Failed to delete all files:', error);
     throw new Error('Could not delete all files.');

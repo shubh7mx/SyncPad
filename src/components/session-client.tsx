@@ -15,7 +15,7 @@ import { formatFileSize, cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Progress } from './ui/progress';
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_SIZE = 45 * 1024 * 1024; // 45 MB
 const FILE_EXPIRATION_HOURS = 1;
 
 const isFileExpired = (createdAt: string) => {
@@ -221,15 +221,6 @@ export default function SessionClient({
     };
   }, [sessionId, files, isMounted, text]);
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  }
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -248,8 +239,10 @@ export default function SessionClient({
 
     setUploading(true);
     try {
-      const base64File = await fileToBase64(file);
-      await uploadFile(sessionId, base64File, file.name);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      await uploadFile(sessionId, formData);
       
       toast({
         title: 'File Uploaded',
@@ -442,7 +435,7 @@ export default function SessionClient({
                         )}
                     </ScrollArea>
                     <footer className="h-12 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
-                        <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
+                        <p className='whitespace-nowrap'>Files expire in 1 hour | 45mb max</p>
                         {files.length > 0 && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -586,7 +579,7 @@ export default function SessionClient({
                 )}
             </ScrollArea>
             <footer className="h-12 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
-                <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
+                <p className='whitespace-nowrap'>Files expire in 1 hour | 45mb max</p>
                  {files.length > 0 && (
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
