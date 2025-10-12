@@ -78,6 +78,7 @@ export default function SessionClient({
   const [isMobileFilesOpen, setIsMobileFilesOpen] = useState(true);
   const [charCount, setCharCount] = useState(initialData.textContent.length);
   const remoteUpdate = useRef(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -94,10 +95,21 @@ export default function SessionClient({
         remoteUpdate.current = false;
         return;
     }
-    if (isMounted && text !== initialData.textContent) {
-      updateText(sessionId, text);
+    if (isMounted) {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+      debounceTimeout.current = setTimeout(() => {
+        updateText(sessionId, text);
+      }, 500); // 500ms debounce delay
     }
-  }, [text, sessionId, initialData.textContent, isMounted]);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    }
+  }, [text, sessionId, isMounted]);
 
   useEffect(() => {
     setCharCount(text.length);
