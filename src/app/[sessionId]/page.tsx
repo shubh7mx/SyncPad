@@ -8,7 +8,6 @@ import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Footer } from "@/components/footer";
 
 type Props = {
   params: Promise<{ sessionId: string }>;
@@ -91,7 +90,6 @@ export default function SessionPage({ params }: Props) {
         <main className="flex-1 flex flex-col overflow-hidden bg-background">
           <SessionClient sessionId={sessionId} initialData={initialData} />
         </main>
-        <Footer />
       </div>
     </div>
   );
