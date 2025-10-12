@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useTransition } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -13,33 +13,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
 import {
   updateText,
   uploadFile,
-  analyzeSentiment,
   getFileView,
 } from '@/lib/actions';
 import { appwriteClient, subscribe, AppwriteIds } from '@/lib/appwrite';
-import type { SessionData, FileObject, SentimentSummary } from '@/lib/definitions';
+import type { SessionData, FileObject } from '@/lib/definitions';
 import {
-  Loader2,
   File as FileIcon,
   UploadCloud,
   Download,
-  BrainCircuit,
-  Smile,
-  Frown,
-  Meh,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn, formatFileSize } from '@/lib/utils';
@@ -56,9 +42,6 @@ export default function SessionClient({
   const [uploading, setUploading] = useState<
     { name: string; progress: number } | false
   >(false);
-  const [sentimentResult, setSentimentResult] = useState<SentimentSummary | null>(initialData.sentimentSummary);
-  const [isSentimentModalOpen, setIsSentimentModalOpen] = useState(false);
-  const [isAnalyzing, startAnalyzing] = useTransition();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -77,8 +60,6 @@ export default function SessionClient({
         const payload = response.payload as {
           textContent: string;
           files: string[];
-          summary?: string;
-          sentiment?: string;
         };
 
         setText(payload.textContent);
@@ -99,10 +80,6 @@ export default function SessionClient({
         if (newFiles.length !== files.length) {
             // A simple refresh might be the easiest way to get full file data
             window.location.reload();
-        }
-
-        if (payload.summary && payload.sentiment) {
-          setSentimentResult({ summary: payload.summary, sentiment: payload.sentiment });
         }
       }
     );
@@ -142,39 +119,6 @@ export default function SessionClient({
       }
     }
   };
-
-  const handleAnalyze = () => {
-    startAnalyzing(async () => {
-      if (!text.trim()) {
-        toast({
-          variant: 'destructive',
-          title: 'Nothing to analyze',
-          description: 'Please enter some text first.',
-        });
-        return;
-      }
-      try {
-        const result = await analyzeSentiment(sessionId, text);
-        if (result) {
-          setSentimentResult(result);
-          setIsSentimentModalOpen(true);
-        }
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Analysis Failed',
-          description: 'Could not analyze sentiment at this time.',
-        });
-      }
-    });
-  };
-
-  const getSentimentIcon = (sentiment: string | undefined) => {
-    const lowerSentiment = sentiment?.toLowerCase() || '';
-    if (lowerSentiment.includes('positive')) return <Smile className="h-5 w-5 text-green-500" />;
-    if (lowerSentiment.includes('negative')) return <Frown className="h-5 w-5 text-red-500" />;
-    return <Meh className="h-5 w-5 text-yellow-500" />;
-  };
   
   const handleDownload = async (fileId: string) => {
     const url = await getFileView(fileId);
@@ -200,37 +144,10 @@ export default function SessionClient({
               className="h-full min-h-[300px] resize-none font-body text-base"
             />
           </CardContent>
-          <div className="p-4 pt-0">
-             <Button onClick={handleAnalyze} disabled={isAnalyzing || !text.trim()} className="bg-accent hover:bg-accent/90">
-              {isAnalyzing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <BrainCircuit className="mr-2 h-4 w-4" />
-              )}
-              Analyze Sentiment
-            </Button>
-          </div>
         </Card>
 
         {/* Files Area */}
         <div className="flex flex-col gap-8">
-            {sentimentResult && (
-                <Card className="bg-secondary/50">
-                    <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-2">
-                            {getSentimentIcon(sentimentResult.sentiment)}
-                            Sentiment Analysis
-                        </CardTitle>
-                        <CardDescription>
-                            AI-powered summary of the text content.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="font-body text-sm italic">"{sentimentResult.summary}"</p>
-                        <Badge variant="outline" className="mt-2 capitalize">{sentimentResult.sentiment}</Badge>
-                    </CardContent>
-                </Card>
-            )}
           <Card className="flex flex-col">
             <CardHeader>
               <CardTitle className="font-headline">Shared Files</CardTitle>
@@ -309,32 +226,6 @@ export default function SessionClient({
           </Card>
         </div>
       </div>
-
-      <Dialog open={isSentimentModalOpen} onOpenChange={setIsSentimentModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-headline">
-              {getSentimentIcon(sentimentResult?.sentiment)}
-              Sentiment Analysis Complete
-            </DialogTitle>
-            <DialogDescription>
-              Here's the AI-powered analysis of the text content.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-4 font-body">
-            <div>
-              <h3 className="font-semibold">Sentiment</h3>
-               <Badge variant="outline" className="mt-1 capitalize">{sentimentResult?.sentiment}</Badge>
-            </div>
-            <div>
-              <h3 className="font-semibold">Summary</h3>
-              <p className="mt-1 text-sm text-muted-foreground italic">
-                "{sentimentResult?.summary}"
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

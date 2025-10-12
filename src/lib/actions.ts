@@ -2,8 +2,7 @@
 
 import { databases, storage, AppwriteIds, getAnonymousSession, getFileView as appwriteGetFileView } from './appwrite';
 import { ID, Query } from 'appwrite';
-import type { SessionData, FileObject, SentimentSummary } from './definitions';
-import { summarizeContentSentiment } from '@/ai/flows/summarize-content-sentiment';
+import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 
 export async function getSession(sessionId: string): Promise<SessionData> {
@@ -20,12 +19,9 @@ export async function getSession(sessionId: string): Promise<SessionData> {
         fileIds.map(id => storage.getFile(AppwriteIds.filesBucketId, id))
     );
 
-    const sentimentSummary = document.summary && document.sentiment ? { summary: document.summary, sentiment: document.sentiment } : null;
-
     return {
       textContent: document.textContent as string,
       files: fileObjects,
-      sentimentSummary: sentimentSummary
     };
 
   } catch (error) {
@@ -37,7 +33,7 @@ export async function getSession(sessionId: string): Promise<SessionData> {
         sessionId,
         { textContent: '', files: [] }
       );
-      return { textContent: '', files: [], sentimentSummary: null };
+      return { textContent: '', files: [] };
     } catch (createError) {
       console.error('Failed to create session document:', createError);
       throw new Error('Could not create or retrieve session.');
@@ -99,27 +95,7 @@ export async function uploadFile(sessionId: string, formData: FormData, onProgre
     }
 }
 
-export async function analyzeSentiment(sessionId: string, text: string): Promise<SentimentSummary | null> {
-    await getAnonymousSession();
-    try {
-        const { summary, sentiment } = await summarizeContentSentiment({ text });
-        
-        await databases.updateDocument(
-            AppwriteIds.databaseId,
-            AppwriteIds.sessionsCollectionId,
-            sessionId,
-            { summary, sentiment }
-        );
-        
-        revalidatePath(`/s/${sessionId}`);
-        return { summary, sentiment };
-
-    } catch (error) {
-        console.error('Failed to analyze sentiment:', error);
-        throw new Error('AI analysis failed.');
-    }
-}
-
 export async function getFileView(fileId: string): Promise<string> {
-    return appwriteGetFileView(fileId);
+    const url = await appwriteGetFileView(fileId);
+    return url;
 }
