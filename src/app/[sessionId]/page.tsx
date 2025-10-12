@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Footer } from "@/components/footer";
 
 type Props = {
   params: Promise<{ sessionId: string }>;
@@ -66,9 +67,9 @@ export default function SessionPage({ params }: Props) {
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-muted/40 p-4">
-      <div className="flex h-full w-full max-w-7xl flex-col rounded-lg border bg-background font-sans antialiased shadow-lg overflow-hidden">
-        <header className="flex h-12 flex-shrink-0 items-center justify-between border-b px-4">
+    <div className="flex h-screen w-full flex-col bg-muted/40">
+      <div className="flex h-full w-full flex-col font-sans antialiased">
+        <header className="flex h-12 flex-shrink-0 items-center justify-between border-b bg-background px-4">
           <div className="flex items-center gap-2 font-semibold tracking-tight w-[120px]">
             <Link href="/" className="flex items-center gap-2">
               <NotepadText className="h-6 w-6 text-primary" />
@@ -87,9 +88,10 @@ export default function SessionPage({ params }: Props) {
             <ThemeToggle />
           </div>
         </header>
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden bg-background">
           <SessionClient sessionId={sessionId} initialData={initialData} />
         </main>
+        <Footer />
       </div>
     </div>
   );

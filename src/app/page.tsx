@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NotepadText, Sparkles } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Footer } from '@/components/footer';
 
 export default function Home() {
   const router = useRouter();
@@ -67,17 +68,7 @@ export default function Home() {
             </div>
         </div>
       </main>
-      <footer className="py-4 px-4 text-center text-sm text-muted-foreground">
-        made by{' '}
-        <a
-          href="https://vlkn.in"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-primary"
-        >
-          VLKN
-        </a>
-      </footer>
+      <Footer />
     </div>
   );
 }
