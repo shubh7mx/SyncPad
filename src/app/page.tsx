@@ -24,7 +24,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-black text-foreground font-sans">
+    <div className="flex flex-col h-screen w-full text-foreground font-sans">
         <div className="absolute top-4 right-4">
             <ThemeToggle />
         </div>
