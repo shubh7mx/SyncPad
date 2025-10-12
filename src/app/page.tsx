@@ -24,7 +24,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background text-foreground font-sans">
+    <div className="flex flex-col h-screen w-full bg-black text-foreground font-sans">
         <div className="absolute top-4 right-4">
             <ThemeToggle />
         </div>
@@ -38,7 +38,7 @@ export default function Home() {
                 <div className="relative flex-1">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-primary/80 rounded-lg blur opacity-0 group-hover:opacity-75 group-focus-within:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                     <div className="flex-1 flex items-center rounded-md bg-card shadow-sm relative border border-input">
-                        <span className="text-sm text-muted-foreground px-3 py-2.5">syncpad.com/</span>
+                        <span className="text-sm text-muted-foreground px-3 py-2.5">syncpad.vlkn.in/</span>
                         <Input
                             id="session-name"
                             value={sessionName}
