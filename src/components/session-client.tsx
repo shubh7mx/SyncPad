@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
@@ -527,7 +527,7 @@ export default function SessionClient({
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(file.$id)} className={buttonVariants({ variant: 'destructive' })}>
+                                        <AlertDialogAction onClick={() => handleDelete(file.$id)} className={cn(buttonVariants({ variant: 'destructive' }))}>
                                             Delete
                                         </AlertDialogAction>
                                         </AlertDialogFooter>
