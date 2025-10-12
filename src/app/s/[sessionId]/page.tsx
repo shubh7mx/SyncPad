@@ -1,7 +1,7 @@
 'use client';
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from 'react';
 import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,7 @@ type Props = {
 };
 
 export default function SessionPage({ params }: Props) {
-  // Use React.use() to correctly unwrap params on the server
-  const { sessionId } = use(Promise.resolve(params));
+  const { sessionId } = params;
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,7 +36,9 @@ export default function SessionPage({ params }: Props) {
         setLoading(false);
       }
     }
-    loadSession();
+    if (sessionId) {
+      loadSession();
+    }
   }, [sessionId]);
 
   const handleCopy = () => {
