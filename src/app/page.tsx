@@ -7,6 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Footer } from '@/components/footer';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Sparkles } from 'lucide-react';
+
+const adjectives = [
+    'happy', 'silly', 'clever', 'brave', 'quiet', 'loud', 'fast', 'slow', 'bright', 'dark',
+    'tiny', 'huge', 'red', 'blue', 'green', 'pink', 'purple', 'orange', 'yellow', 'black', 'white',
+    'breezy', 'calm', 'dandy', 'fancy', 'grand', 'jolly', 'keen', 'lucky', 'merry', 'sunny'
+];
+const nouns = [
+    'cat', 'dog', 'tree', 'sun', 'moon', 'star', 'river', 'ocean', 'desk', 'chair',
+    'bird', 'fox', 'wolf', 'lion', 'tiger', 'bear', 'fish', 'ship', 'car', 'bike',
+    'apple', 'banana', 'cherry', 'grape', 'lemon', 'mango', 'peach', 'pear', 'plum', 'kiwi'
+];
 
 export default function Home() {
   const router = useRouter();
@@ -17,6 +29,14 @@ export default function Home() {
     router.push(`/${sessionId}`);
   };
 
+  const createLuckySession = () => {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const num = Math.floor(Math.random() * 100);
+    const sessionId = `${adj}-${noun}-${num}`;
+    router.push(`/${sessionId}`);
+  }
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       createNewSession();
@@ -24,7 +44,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full text-foreground font-sans">
+    <div className="flex flex-col h-screen w-full text-foreground font-sans bg-black">
         <div className="absolute top-4 right-4">
             <ThemeToggle />
         </div>
@@ -62,6 +82,16 @@ export default function Home() {
                   }}
                 >
                     Go!
+                </Button>
+            </div>
+            <div className="flex items-center justify-center space-x-2">
+                <Button 
+                    onClick={createLuckySession}
+                    variant="ghost"
+                    className="group"
+                >
+                    <Sparkles className="h-4 w-4 mr-2 text-primary/70 group-hover:text-primary transition-colors" />
+                    <span className="text-muted-foreground group-hover:text-foreground transition-colors">I'm feeling lucky</span>
                 </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-2">No login required</p>
