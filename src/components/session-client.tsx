@@ -114,7 +114,7 @@ export default function SessionClient({
     if (window.innerWidth < 768) {
       setIsFilesVisible(false);
     }
-    cleanupExpiredFiles(initialData.files);
+    setFiles(cleanupExpiredFiles(initialData.files));
   }, []);
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function SessionClient({
     
     // Periodically check for expired files
     const cleanupInterval = setInterval(() => {
-        cleanupExpiredFiles(files);
+        setFiles(cleanupExpiredFiles(files));
     }, 5 * 60 * 1000); // Check every 5 minutes
 
     return () => {
@@ -384,7 +384,7 @@ export default function SessionClient({
                         )}
                     </ScrollArea>
                     <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
-                        <p className='whitespace-nowrap'>Files expire in 1 hour</p>
+                        <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
                     </footer>
                 </div>
             </aside>
@@ -502,7 +502,7 @@ export default function SessionClient({
                 )}
             </ScrollArea>
             <footer className="h-8 border-t flex items-center justify-center px-4 text-xs text-muted-foreground flex-shrink-0">
-                <p className='whitespace-nowrap'>Files expire in 1 hour</p>
+                <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
             </footer>
         </aside>
 
