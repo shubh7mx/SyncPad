@@ -2,7 +2,6 @@
 
 import { databases, storage, AppwriteIds, getAnonymousSession } from './appwrite';
 import { ID, Query } from 'appwrite';
-import { InputFile } from 'node-appwrite';
 import type { SessionData, FileObject } from './definitions';
 import { revalidatePath } from 'next/cache';
 
@@ -56,28 +55,24 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-type UploadFileParams = {
-  sessionId: string;
-  fileData: string; // base64 encoded string
-  fileName: string;
-  fileType: string;
-}
-
-export async function uploadFile({ sessionId, fileData, fileName, fileType }: UploadFileParams): Promise<FileObject | null> {
+export async function uploadFile(sessionId: string, base64File: string, fileName: string): Promise<FileObject | null> {
     await getAnonymousSession();
-    
-    if (!fileData || !sessionId || !fileName) {
-        throw new Error('File data, session ID, or file name not provided');
+
+    if (!base64File) {
+        throw new Error('No file provided');
     }
 
     try {
-        const fileBuffer = Buffer.from(fileData, 'base64');
-        const inputFile = InputFile.fromBuffer(fileBuffer, fileName);
+        // Convert base64 to Blob
+        const fileBlob = await fetch(base64File).then(res => res.blob());
+        
+        // Create a File object from the Blob
+        const fileToUpload = new File([fileBlob], fileName, { type: fileBlob.type });
 
         const uploadedFile = await storage.createFile(
             AppwriteIds.filesBucketId,
             ID.unique(),
-            inputFile,
+            fileToUpload,
         );
 
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
@@ -167,3 +162,5 @@ export async function deleteAllFiles(sessionId: string) {
     throw new Error('Could not delete all files.');
   }
 }
+
+    
