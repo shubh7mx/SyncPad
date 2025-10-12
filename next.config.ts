@@ -3,7 +3,6 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   serverActions: {
     bodySizeLimit: '50mb',
-    serverActionsTimeout: 120, // Increase timeout to 2 minutes for large uploads
   },
   typescript: {
     ignoreBuildErrors: true,
@@ -36,5 +35,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-    

@@ -6,16 +6,17 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { updateText, uploadFile, getSession, deleteFile, deleteAllFiles } from '@/lib/actions';
-import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
+import { updateText, getSession, deleteFile, deleteAllFiles, linkFileToSession } from '@/lib/actions';
+import { subscribe, AppwriteIds, getFileView, storage as appwriteStorage } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
 import { File as FileIcon, Upload, Download, Loader2, X, Trash2, PlusCircle, PanelRightOpen, PanelRightClose, ChevronDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFileSize, cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Progress } from './ui/progress';
+import { ID } from 'appwrite';
 
-const MAX_FILE_SIZE = 45 * 1024 * 1024; // 45 MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 const FILE_EXPIRATION_HOURS = 1;
 
 const isFileExpired = (createdAt: string) => {
@@ -221,20 +222,10 @@ export default function SessionClient({
     };
   }, [sessionId, files, isMounted, text]);
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+  
     if (file.size > MAX_FILE_SIZE) {
       toast({
         variant: 'destructive',
@@ -246,11 +237,20 @@ export default function SessionClient({
       }
       return;
     }
-
+  
     setUploading(true);
+    let uploadedFileId: string | null = null;
     try {
-      const base64File = await fileToBase64(file);
-      await uploadFile(sessionId, base64File, file.name);
+      // Step 1: Upload file directly to Appwrite Storage
+      const uploadedFile = await appwriteStorage.createFile(
+        AppwriteIds.filesBucketId,
+        ID.unique(),
+        file
+      );
+      uploadedFileId = uploadedFile.$id;
+  
+      // Step 2: Link the uploaded file ID to the session document via Server Action
+      await linkFileToSession(sessionId, uploadedFileId);
       
       toast({
         title: 'File Uploaded',
@@ -263,6 +263,14 @@ export default function SessionClient({
         title: 'Upload Failed',
         description: error instanceof Error ? error.message : 'Could not upload file.',
       });
+      // Cleanup orphaned file if linking failed
+      if (uploadedFileId) {
+        try {
+          await appwriteStorage.deleteFile(AppwriteIds.filesBucketId, uploadedFileId);
+        } catch (cleanupError) {
+          console.error('Orphaned file cleanup failed:', cleanupError);
+        }
+      }
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -444,7 +452,7 @@ export default function SessionClient({
                         )}
                     </ScrollArea>
                     <footer className="h-12 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
-                        <p className='whitespace-nowrap'>Files expire in 1 hour | 45mb max</p>
+                        <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
                         {files.length > 0 && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -588,7 +596,7 @@ export default function SessionClient({
                 )}
             </ScrollArea>
             <footer className="h-12 border-t flex items-center justify-between px-4 text-xs text-muted-foreground flex-shrink-0">
-                <p className='whitespace-nowrap'>Files expire in 1 hour | 45mb max</p>
+                <p className='whitespace-nowrap'>Files expire in 1 hour | 50mb max</p>
                  {files.length > 0 && (
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -635,5 +643,3 @@ export default function SessionClient({
     </div>
   );
 }
-
-    

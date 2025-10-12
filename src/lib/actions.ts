@@ -55,40 +55,26 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(sessionId: string, base64File: string, fileName: string): Promise<FileObject | null> {
+export async function linkFileToSession(sessionId: string, fileId: string): Promise<void> {
     await getAnonymousSession();
-
-    if (!base64File) {
-        throw new Error('No file provided');
-    }
-
     try {
-        // Convert base64 to Blob
-        const fileBlob = await fetch(base64File).then(res => res.blob());
-        
-        // Create a File object from the Blob
-        const fileToUpload = new File([fileBlob], fileName, { type: fileBlob.type });
-
-        const uploadedFile = await storage.createFile(
-            AppwriteIds.filesBucketId,
-            ID.unique(),
-            fileToUpload,
-        );
-
         const document = await databases.getDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId);
         const currentFiles = (document.files || []) as string[];
         
         await databases.updateDocument(AppwriteIds.databaseId, AppwriteIds.sessionsCollectionId, sessionId, {
-            files: [...currentFiles, uploadedFile.$id]
+            files: [...currentFiles, fileId]
         });
 
         revalidatePath(`/${sessionId}`);
-        
-        return uploadedFile as FileObject;
-
     } catch (error) {
-        console.error('Failed to upload file:', error);
-        throw new Error('File upload failed. Check file size, type limits, and bucket permissions.');
+        console.error('Failed to link file to session:', error);
+        // If linking fails, try to clean up the orphaned file from storage
+        try {
+            await storage.deleteFile(AppwriteIds.filesBucketId, fileId);
+        } catch (cleanupError) {
+            console.error('Failed to clean up orphaned file:', cleanupError);
+        }
+        throw new Error('Could not link file to session.');
     }
 }
 
@@ -162,5 +148,3 @@ export async function deleteAllFiles(sessionId: string) {
     throw new Error('Could not delete all files.');
   }
 }
-
-    
