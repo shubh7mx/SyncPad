@@ -55,9 +55,9 @@ export async function updateText(sessionId: string, text: string) {
   }
 }
 
-export async function uploadFile(sessionId: string, formData: FormData): Promise<FileObject | null> {
+export async function uploadFile(sessionId: string, file: File): Promise<FileObject | null> {
     await getAnonymousSession();
-    const file = formData.get('file') as File;
+
     if (!file) {
         throw new Error('No file provided');
     }
@@ -82,11 +82,12 @@ export async function uploadFile(sessionId: string, formData: FormData): Promise
 
     } catch (error) {
         console.error('Failed to upload file:', error);
-        throw new Error('File upload failed. Check file size and type limits.');
+        throw new Error('File upload failed. Check file size, type limits, and bucket permissions.');
     }
 }
 
 export async function getFileView(fileId: string): Promise<string> {
-    const url = await appwriteGetFileView(fileId);
+    await getAnonymousSession();
+    const url = appwriteGetFileView(fileId);
     return url;
 }

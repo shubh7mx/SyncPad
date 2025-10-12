@@ -10,7 +10,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { updateText, uploadFile, getSession } from '@/lib/actions';
 import { subscribe, AppwriteIds, getFileView } from '@/lib/appwrite';
 import type { SessionData, FileObject } from '@/lib/definitions';
-import { File as FileIcon, Upload, Download, Loader2 } from 'lucide-react';
+import { File as FileIcon, Upload, Download, Loader2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatFileSize } from '@/lib/utils';
 import { Separator } from './ui/separator';
@@ -26,6 +26,7 @@ export default function SessionClient({
   const [files, setFiles] = useState<FileObject[]>(initialData.files);
   const [uploading, setUploading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isFilesVisible, setIsFilesVisible] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -33,6 +34,9 @@ export default function SessionClient({
 
   useEffect(() => {
     setIsMounted(true);
+    if (window.innerWidth < 768) {
+      setIsFilesVisible(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -50,7 +54,6 @@ export default function SessionClient({
       return subscribe(channel, (response) => {
         const payload = response.payload as SessionData & { files: string[] };
         
-        // Use a functional update for `setText` to avoid stale state issues.
         setText(currentText => {
             if (payload.textContent !== undefined && payload.textContent !== currentText) {
                 return payload.textContent;
@@ -87,9 +90,7 @@ export default function SessionClient({
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      await uploadFile(sessionId, formData);
+      await uploadFile(sessionId, file);
       toast({
         title: 'File Uploaded',
         description: `${file.name} is now available.`,
@@ -114,83 +115,102 @@ export default function SessionClient({
   };
 
   return (
-    <div className="container mx-auto max-w-7xl h-full flex flex-col md:grid md:grid-cols-3 gap-6 py-6">
-        <div className="h-full w-full md:col-span-2 flex flex-col rounded-xl border bg-card/60 backdrop-blur-xl shadow-lg min-h-[calc(100vh-10rem)] md:min-h-0">
+    <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] overflow-hidden">
+        <div className="flex flex-col h-full">
             <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Start typing..."
-            className="flex-1 w-full h-full p-4 text-base bg-transparent border-0 rounded-t-xl focus-visible:ring-0 resize-none"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Start typing..."
+              className="flex-1 w-full h-full p-4 text-base bg-transparent border-0 rounded-none focus-visible:ring-0 resize-none font-mono"
             />
         </div>
-        <div className="flex flex-col gap-4 rounded-xl border bg-card/60 backdrop-blur-xl shadow-lg p-4 h-fit md:h-full">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="font-semibold">Shared Files</h3>
-                    <p className="text-sm text-muted-foreground">Files expire after 1 hour.</p>
-                </div>
-                <Input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                />
-                <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    variant="outline"
-                    size="sm"
-                >
-                    {uploading ? (
-                    <Loader2 className="mr-2 animate-spin" />
-                    ) : (
-                    <Upload className="mr-2" />
-                    )}
-                    Upload
-                </Button>
-            </div>
-            <Separator />
-            <ScrollArea className="flex-1 -mr-4 pr-3">
-                {files.length > 0 ? (
-                <div className="space-y-2">
-                    {files.map((file) => (
-                    <div
-                        key={file.$id}
-                        className="flex items-center justify-between rounded-md border p-2 bg-background/50"
-                    >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                        <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                        <div className="truncate">
-                            <p className="truncate text-sm font-medium">
-                            {file.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                            {formatFileSize(file.sizeOriginal)} &middot;{' '}
-                            {formatDistanceToNow(new Date(file.$createdAt), {
-                                addSuffix: true,
-                            })}
-                            </p>
-                        </div>
-                        </div>
+        {isFilesVisible && (
+            <aside className="w-full md:w-80 border-l flex flex-col h-full">
+                <div className="flex items-center justify-between p-2 border-b h-12">
+                    <h3 className="font-semibold px-2">Shared Files</h3>
+                    <div className="flex items-center gap-1">
+                        <Input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
                         <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDownload(file.$id)}
-                        aria-label={`Download ${file.name}`}
-                        className="flex-shrink-0"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Upload File"
                         >
-                        <Download className="h-5 w-5" />
+                            {uploading ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                            <Upload className="h-5 w-5" />
+                            )}
+                        </Button>
+                        <Button
+                            onClick={() => setIsFilesVisible(false)}
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Close Files Panel"
+                            className="md:hidden"
+                        >
+                            <X className="h-5 w-5" />
                         </Button>
                     </div>
-                    ))}
                 </div>
-                ) : (
-                <div className="text-center text-sm text-muted-foreground py-10">
-                    No files shared yet.
+                <ScrollArea className="flex-1 p-2">
+                    {files.length > 0 ? (
+                    <div className="space-y-2">
+                        {files.map((file) => (
+                        <div
+                            key={file.$id}
+                            className="flex items-center justify-between rounded-md border p-2 bg-background/50"
+                        >
+                            <div className="flex items-center gap-3 overflow-hidden">
+                            <FileIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                            <div className="truncate">
+                                <p className="truncate text-sm font-medium">
+                                {file.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                {formatFileSize(file.sizeOriginal)} &middot;{' '}
+                                {formatDistanceToNow(new Date(file.$createdAt), {
+                                    addSuffix: true,
+                                })}
+                                </p>
+                            </div>
+                            </div>
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDownload(file.$id)}
+                            aria-label={`Download ${file.name}`}
+                            className="flex-shrink-0"
+                            >
+                            <Download className="h-5 w-5" />
+                            </Button>
+                        </div>
+                        ))}
+                    </div>
+                    ) : (
+                    <div className="text-center text-sm text-muted-foreground py-10 px-4">
+                        No files have been shared in this pad.
+                    </div>
+                    )}
+                </ScrollArea>
+                <div className="p-2 border-t text-xs text-muted-foreground">
+                  Files are temporary and will be deleted after 1 hour of inactivity.
                 </div>
-                )}
-            </ScrollArea>
-        </div>
+            </aside>
+        )}
+        {!isFilesVisible && (
+             <div className="absolute bottom-10 right-4 md:hidden">
+                 <Button onClick={() => setIsFilesVisible(true)} size="icon">
+                     <FileIcon />
+                 </Button>
+             </div>
+        )}
     </div>
   );
 }
