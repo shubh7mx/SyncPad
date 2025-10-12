@@ -279,9 +279,14 @@ export default function SessionClient({
     }
   };
   
-  const handleDownload = (fileId: string) => {
+  const handleDownload = (fileId: string, fileName: string) => {
     const url = getFileView(fileId);
-    window.open(url, '_blank');
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleDelete = async (fileId: string) => {
@@ -405,7 +410,7 @@ export default function SessionClient({
                                         <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => handleDownload(file.$id)}
+                                        onClick={() => handleDownload(file.$id, file.name)}
                                         aria-label={`Download ${file.name}`}
                                         className="h-8 w-8"
                                         >
@@ -549,7 +554,7 @@ export default function SessionClient({
                                 <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => handleDownload(file.$id)}
+                                onClick={() => handleDownload(file.$id, file.name)}
                                 aria-label={`Download ${file.name}`}
                                 className="h-8 w-8"
                                 >
