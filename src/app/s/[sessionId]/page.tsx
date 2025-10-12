@@ -13,8 +13,7 @@ type Props = {
   params: { sessionId: string };
 };
 
-export default function SessionPage({ params }: Props) {
-  const { sessionId } = params;
+export default function SessionPage({ params: { sessionId } }: Props) {
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
 
