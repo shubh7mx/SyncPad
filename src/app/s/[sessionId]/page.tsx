@@ -1,7 +1,7 @@
 'use client';
 import { getSession } from "@/lib/actions";
 import SessionClient from "@/components/session-client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { NotepadText, Link as LinkIcon, Home, Check, ClipboardCopy, HardDriveDownload } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,9 @@ type Props = {
   params: { sessionId: string };
 };
 
-export default function SessionPage({ params: { sessionId } }: Props) {
+export default function SessionPage({ params }: Props) {
+  // Use React.use() to correctly unwrap params on the server
+  const { sessionId } = use(Promise.resolve(params));
   const [initialData, setInitialData] = useState<Awaited<ReturnType<typeof getSession>> | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,15 +83,15 @@ export default function SessionPage({ params: { sessionId } }: Props) {
                     <MenubarContent>
                         <Link href="/">
                             <MenubarItem>
-                                <Home className="mr-2" /> New Pad
+                                <Home className="mr-2 h-4 w-4" /> New Pad
                             </MenubarItem>
                         </Link>
                         <MenubarItem onClick={handleCopy}>
-                            <LinkIcon className="mr-2" /> Share Link
+                            <LinkIcon className="mr-2 h-4 w-4" /> Share Link
                         </MenubarItem>
                         <MenubarSeparator />
                         <MenubarItem disabled>
-                            <HardDriveDownload className="mr-2" /> Save as...
+                            <HardDriveDownload className="mr-2 h-4 w-4" /> Save as...
                             <MenubarShortcut>soon</MenubarShortcut>
                         </MenubarItem>
                     </MenubarContent>
