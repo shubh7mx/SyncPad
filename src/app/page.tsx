@@ -25,7 +25,7 @@ export default function Home() {
     <div className="flex flex-col h-screen w-full bg-background text-foreground font-sans">
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="w-full max-w-lg space-y-4">
-            <h1 className="text-6xl font-bold tracking-wider">SyncPad</h1>
+            <h1 className="text-6xl font-bold tracking-wider">SYNCPAD</h1>
             <p className="text-xl text-muted-foreground">The simplest way to share text online</p>
             <div className="flex items-center gap-2 mt-8 max-w-md mx-auto">
                 <div className="flex-1 flex items-center border rounded-md bg-card">
