@@ -20,7 +20,7 @@ export function Footer() {
       <div>
         © {currentYear}{' '}
         <Link
-          href="https://vlkn.in"
+          href="https://vlkn.me"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline font-semibold"
