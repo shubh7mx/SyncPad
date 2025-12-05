@@ -2,18 +2,8 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
-// src/app/layout.tsx
-import { PermitlyProvider } from '@/components/Permitly';
-
-
-    <PermitlyProvider 
-      project="pk_live_6932d3eb00010f6d62b6" 
-      api="https://www.permitly.in"
-    >
-      {children}
-    </PermitlyProvider>
-  );
-}
+// Import the component you created
+import { PermitlyProvider } from '@/components/Permitly'; 
 
 export const metadata: Metadata = {
   title: 'SyncPad',
@@ -34,7 +24,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          {/* Wrap only the inner children part with Permitly */}
+          <PermitlyProvider 
+            project="pk_live_6932d3eb00010f6d62b6" 
+            api="https://www.permitly.in"
+          >
+            {children}
+          </PermitlyProvider>
+          
           <Toaster />
         </ThemeProvider>
       </body>
