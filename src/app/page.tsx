@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sparkles } from 'lucide-react';
 
-import { usePermitly } from '@permitly/react';
+import { usePermitly } from '@/components/Permitly';
 
 export function Feature() {
   const { isAllowed } = usePermitly();
