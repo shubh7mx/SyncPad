@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 // src/app/layout.tsx
-import { PermitlyProvider } from '@permitly/react';
+import { PermitlyProvider } from '@/components/Permitly';
 
 export default function RootLayout({ children }) {
   return (
