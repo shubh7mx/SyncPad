@@ -5,8 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 // src/app/layout.tsx
 import { PermitlyProvider } from '@/components/Permitly';
 
-export default function RootLayout({ children }) {
-  return (
+
     <PermitlyProvider 
       project="pk_live_6932d3eb00010f6d62b6" 
       api="https://www.permitly.in"
