@@ -9,6 +9,15 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sparkles } from 'lucide-react';
 
+import { usePermitly } from '@permitly/react';
+
+export function Feature() {
+  const { isAllowed } = usePermitly();
+
+  if (!isAllowed) return <div>Access Denied</div>;
+  return <div>Premium Content</div>;
+}
+
 const adjectives = [
     'happy', 'silly', 'clever', 'brave', 'quiet', 'loud', 'fast', 'slow', 'bright', 'dark',
     'tiny', 'huge', 'red', 'blue', 'green', 'pink', 'purple', 'orange', 'yellow', 'black', 'white',
